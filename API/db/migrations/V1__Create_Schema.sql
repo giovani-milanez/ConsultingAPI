@@ -4,14 +4,15 @@ CREATE TABLE `users` (
   `name` varchar(255),
   `email` varchar(255),
   `password` varchar(255),
-  `refresh_token` varchar(255),
-  `refresh_token_expiry_time` datetime,
-  `is_email_confirmed` boolean,
   `cpf_cnpj` varchar(255),
   `short_description` varchar(255),
   `long_description` varchar(255),
   `profile_picture` blob,
-  `created_at` datetime
+  `is_email_confirmed` boolean,
+  `email_confirmation_code` binary(16),
+  `created_at` datetime,
+  `refresh_token` varchar(255),
+  `refresh_token_expiry_time` datetime
 );
 
 CREATE TABLE `steps` (

@@ -11,7 +11,7 @@ namespace API.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize("Bearer")]
+    [Authorize]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class FileController : Controller
     {

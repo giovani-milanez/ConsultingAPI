@@ -2,6 +2,7 @@
 using API.Data.VO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -19,20 +20,20 @@ namespace API.Controllers
 
         [HttpPost]
         [Route("signin")]
-        public IActionResult Signin([FromBody] UserVO user)
+        public IActionResult Signin([FromBody] UserLoginVO user)
         {
             if (user == null) return BadRequest("Invalid client request");
-            var token = _loginBussiness.ValidateCredentials(user);
+            var token = _loginBussiness.ValidateCredentialsAsync(user);
             if (token == null) return Unauthorized();
             return Ok(token);
         }
 
         [HttpPost]
         [Route("refresh")]
-        public IActionResult Refresh([FromBody] TokenVO tokenVo)
+        public async Task<IActionResult> RefreshAsync([FromBody] TokenVO tokenVo)
         {
             if (tokenVo == null) return BadRequest("Invalid client request");
-            var token = _loginBussiness.ValidateCredentials(tokenVo);
+            var token = await _loginBussiness.ValidateCredentialsAsync(tokenVo);
             if (token == null) return BadRequest("Invalid client request");
             return Ok(token);
         }
@@ -40,10 +41,10 @@ namespace API.Controllers
         [HttpGet]
         [Route("revoke")]
         [Authorize("Bearer")]
-        public IActionResult Revoke()
+        public async Task<IActionResult> RevokeAsync()
         {
             var username = User.Identity.Name;
-            var result = _loginBussiness.RevokeToken(username);
+            var result = await _loginBussiness.RevokeTokenAsync(username);
             if (!result) return BadRequest("Invalid client request");
             return NoContent();
         }

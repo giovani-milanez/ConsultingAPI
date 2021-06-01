@@ -1,11 +1,14 @@
 ﻿using API.Data.VO;
+using System.Threading.Tasks;
 
 namespace API.Business
 {
     public interface ILoginBusiness
     {
-        TokenVO ValidateCredentials(UserVO user);
-        TokenVO ValidateCredentials(TokenVO token);
-        public bool RevokeToken(string email);
+        Task<TokenVO> ValidateCredentialsAsync(UserLoginVO user);
+        Task<TokenVO> ValidateCredentialsAsync(TokenVO token);
+        Task<bool> RevokeTokenAsync(string email);
+
+        void RegisterNewUser(UserSignupVO user);
     }
 }

@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using API.Repository;
+using Database.Repository;
 using Serilog;
 using System;
 using MySqlConnector;
 using System.Collections.Generic;
-using API.Repository.Generic;
+using Database.Repository.Generic;
 using Microsoft.Net.Http.Headers;
 using API.Hypermedia.Filters;
 using Microsoft.OpenApi.Models;
@@ -18,15 +18,12 @@ using API.Services;
 using API.Services.Implementations;
 using API.Configurations;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http;
-using API.Model.Context;
 using API.Business.Implementations;
 using API.Business;
+using Database.Model.Context;
 
 namespace API
 {
@@ -57,32 +54,52 @@ namespace API
 
             services.AddSingleton(tokenConfigurations);
 
-            services.AddAuthentication(options =>
+            services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
+                options.Authority = "https://localhost:5001";
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = tokenConfigurations.Issuer,
-                    ValidAudience = tokenConfigurations.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
+                    ValidateAudience = false
                 };
             });
 
-            services.AddAuthorization(auth =>
+            services.AddAuthorization(options =>
             {
-                auth.AddPolicy("Bearer",
-                    new AuthorizationPolicyBuilder()
-                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                    .RequireAuthenticatedUser().Build());
+                options.AddPolicy("ApiScope", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "consultingapi");
+                });
             });
+
+            //services.AddAuthentication(options =>
+            //{
+            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //})
+            //.AddJwtBearer(options =>
+            //{
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuer = true,
+            //        ValidateAudience = true,
+            //        ValidateLifetime = true,
+            //        ValidateIssuerSigningKey = true,
+            //        ValidIssuer = tokenConfigurations.Issuer,
+            //        ValidAudience = tokenConfigurations.Audience,
+            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
+            //    };
+            //});
+
+            //services.AddAuthorization(auth =>
+            //{
+            //    auth.AddPolicy("Bearer",
+            //        new AuthorizationPolicyBuilder()
+            //        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+            //        .RequireAuthenticatedUser().Build());
+            //});
 
             services.AddCors(options => options.AddDefaultPolicy(builder =>
             {
@@ -129,6 +146,23 @@ namespace API
                             Url = new Uri("mailto:giovani.milanez@gmail.com")
                         }
                     });
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("https://localhost:5001/connect/authorize"),
+                            TokenUrl = new Uri("https://localhost:5001/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                {"consultingapi", "Consulting API"}
+                            }                            
+                        }
+                    }
+                });
+                c.OperationFilter<AuthorizeCheckOperationFilter>();
             });
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -161,18 +195,23 @@ namespace API
             app.UseSwaggerUI(c => {
                 c.SwaggerEndpoint("/swagger/v1.0/swagger.json",
                     "API Restful for consultants to make online appointments");
+                c.OAuthClientId("swagger");
+                c.OAuthAppName("Consulting API");
+                c.OAuthUsePkce();
             });
 
             var option = new RewriteOptions();
             option.AddRedirect("^$", "swagger");
             app.UseRewriter(option);
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapControllerRoute("DefaultApi", "{controller=values}/{id?}");
+                endpoints.MapControllers().RequireAuthorization("ApiScope");
             });
         }
 

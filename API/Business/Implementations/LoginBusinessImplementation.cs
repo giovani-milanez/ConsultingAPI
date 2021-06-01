@@ -1,11 +1,12 @@
 ﻿using API.Configurations;
 using API.Data.VO;
-using API.Repository;
+using Database.Repository;
 using API.Services;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace API.Business.Implementations
 {
@@ -24,9 +25,9 @@ namespace API.Business.Implementations
             _tokenService = tokenService;
         }
 
-        public TokenVO ValidateCredentials(UserVO userCredentials)
+        public async Task<TokenVO> ValidateCredentialsAsync(UserLoginVO userCredentials)
         {
-            var user = _repository.ValidateCredentials(userCredentials);
+            var user = await _repository.ValidateCredentialsAsync(userCredentials.Email, userCredentials.Password);
             if (user == null) return null;
             var claims = new List<Claim>
             {
@@ -40,7 +41,7 @@ namespace API.Business.Implementations
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_configurations.DaysToExpiry);
 
-            _repository.RefreshUserInfo(user);
+            await _repository.RefreshUserInfoAsync(user);
 
             DateTime createDate = DateTime.Now;
             DateTime expirationDate = createDate.AddMinutes(_configurations.Minutes);
@@ -54,7 +55,7 @@ namespace API.Business.Implementations
                 );
         }
 
-        public TokenVO ValidateCredentials(TokenVO token)
+        public async Task<TokenVO> ValidateCredentialsAsync(TokenVO token)
         {
             var accessToken = token.AccessToken;
             var refreshToken = token.RefreshToken;
@@ -63,7 +64,7 @@ namespace API.Business.Implementations
             
             var email = principal.Identity.Name;
             
-            var user = _repository.ValidateCredentials(email);
+            var user = await _repository.FindByEmailAsync(email);
             if (user == null || 
                 user.RefreshToken != refreshToken || 
                 user.RefreshTokenExpiryTime <= DateTime.Now) return null;
@@ -72,7 +73,7 @@ namespace API.Business.Implementations
             refreshToken = _tokenService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            _repository.RefreshUserInfo(user);
+            await _repository.RefreshUserInfoAsync(user);
 
             DateTime createDate = DateTime.Now;
             DateTime expirationDate = createDate.AddMinutes(_configurations.Minutes);
@@ -86,9 +87,14 @@ namespace API.Business.Implementations
                 );
         }
 
-        public bool RevokeToken(string email)
+        public Task<bool> RevokeTokenAsync(string email)
         {
-            return _repository.RevokeToken(email);
+            return _repository.RevokeTokenAsync(email);
+        }
+
+        public void RegisterNewUser(UserSignupVO user)
+        {
+            throw new NotImplementedException();
         }
     }
 }
