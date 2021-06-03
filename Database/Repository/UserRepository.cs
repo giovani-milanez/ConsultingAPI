@@ -1,21 +1,21 @@
 ﻿using Database.Model;
 using Database.Model.Context;
+using Database.Repository.Generic;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Database.Repository
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        private readonly MySQLContext _context;
-
-        public UserRepository(MySQLContext context)
+        public UserRepository(DatabaseContext context) : base(context)
         {
-            _context = context;
         }
 
         public Task<User> ValidateCredentialsAsync(string email, string password)
@@ -70,6 +70,24 @@ namespace Database.Repository
             Byte[] hashedBytes = algorithm.ComputeHash(inputBytes);
 
             return BitConverter.ToString(hashedBytes);
+        }
+
+        public Task<User> FindByExternalProviderAsync(string provider, string providerUserId)
+        {
+            return FindByEmailAsync(providerUserId);
+        }
+
+        public Task<User> AutoProvisionUserAsync(string provider, string providerUserId, List<Claim> claims)
+        {
+            var newUser = new User
+            {
+                Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value,
+                Email = providerUserId,
+                CreatedAt = DateTime.UtcNow,
+                IsEmailConfirmed = true
+            };
+            newUser = this.Create(newUser);
+            return Task.FromResult(newUser);
         }
     }
 }

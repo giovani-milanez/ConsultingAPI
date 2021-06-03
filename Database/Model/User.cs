@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Database.Model.Base;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database.Model
 {
     [Table("users")]
-    public class User
+    public class User : BaseEntity
     {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
         [Column("is_consultant")]
         public bool IsConsultant { get; set; }
         [Column("name")]

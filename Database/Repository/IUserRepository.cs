@@ -1,9 +1,11 @@
 ﻿using Database.Model;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Database.Repository
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
         Task<User> ValidateCredentialsAsync(string email, string password);
         Task<User> FindByEmailAsync(string email);
@@ -11,5 +13,7 @@ namespace Database.Repository
         Task<User> RefreshUserInfoAsync(User user);
 
         Task<bool> RevokeTokenAsync(string username);
+        Task<User> FindByExternalProviderAsync(string provider, string providerUserId);
+        Task<User> AutoProvisionUserAsync(string provider, string providerUserId, List<Claim> claims);
     }
 }

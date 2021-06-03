@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using Database;
 using Database.Model.Context;
 using Database.Repository;
 using IdentityServer.Identity;
@@ -35,18 +36,28 @@ namespace IdentityServer
             // uncomment, if you want to add an MVC-based UI
             services.AddControllersWithViews();
 
-            var connection = Configuration["MySQLConnections:MySQLConnectionStrinng"];
-            services.AddDbContext<MySQLContext>(options => options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
+            var connection = Configuration["DbConnection:ConnectionString"];
+            IDBConnection dbCon = new MySqlDBConnection();
+            services.AddDbContext<DatabaseContext>(options => dbCon.UseDb(options, connection));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddTransient<IResourceOwnerPasswordValidator, ResourceOwnerPasswordValidator>();
             services.AddTransient<IProfileService, ProfileService>();
 
-            services.AddAuthentication().AddGoogle("Google", options =>
+            services.AddAuthentication()
+            .AddGoogle("Google", options =>
             {
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
                 options.ClientId = Configuration["ExternalAuth:Google:ClientId"];
                 options.ClientSecret = Configuration["ExternalAuth:Google:ClientSecret"];
+            })
+            .AddFacebook(options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+
+                options.AppId = Configuration["ExternalAuth:Facebook:AppId"];
+                options.AppSecret = Configuration["ExternalAuth:Facebook:AppSecret"];
+                // facebookOptions.AccessDeniedPath = "/Account/AccessDenied";
             });
 
             var builder = services.AddIdentityServer()

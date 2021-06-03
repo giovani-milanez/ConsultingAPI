@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Http;
 using API.Business.Implementations;
 using API.Business;
 using Database.Model.Context;
+using Database;
 
 namespace API
 {
@@ -108,14 +109,9 @@ namespace API
 
             services.AddControllers();
 
-            var connection = Configuration["MySQLConnections:MySQLConnectionStrinng"];
-
-            services.AddDbContext<MySQLContext>(options => options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
-
-            if (Environment.IsDevelopment())
-            {
-                MigrateDatabase(connection);
-            }
+            IDBConnection dbCon = new MySqlDBConnection();
+            var connection = Configuration["DbConnection:ConnectionString"];
+            services.AddDbContext<DatabaseContext>(options => dbCon.UseDb(options, connection));
 
             services.AddMvc(options =>
             {
@@ -169,6 +165,7 @@ namespace API
 
             services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
             services.AddScoped<IFileBusiness, FileBusinessImplementation>();
+            services.AddScoped<IStepBusiness, StepBusinessImplementation>();
 
             services.AddTransient<ITokenService, TokenService>();
 
@@ -215,22 +212,22 @@ namespace API
             });
         }
 
-        private void MigrateDatabase(string connection)
-        {
-            try
-            {
-                var evolveConnection = new MySqlConnection(connection);
-                var evolve = new Evolve.Evolve(evolveConnection, msg => Log.Information(msg))
-                {
-                    Locations = new List<string> { "db/migrations", "db/dataset" },
-                    IsEraseDisabled = true
-                };
-                evolve.Migrate();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Database migraation failed", ex);
-            }
-        }
+        //private void MigrateDatabase(string connection)
+        //{
+        //    try
+        //    {
+        //        var evolveConnection = new MySqlConnection(connection);
+        //        var evolve = new Evolve.Evolve(evolveConnection, msg => Log.Information(msg))
+        //        {
+        //            Locations = new List<string> { "db/migrations", "db/dataset" },
+        //            IsEraseDisabled = true
+        //        };
+        //        evolve.Migrate();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error("Database migraation failed", ex);
+        //    }
+        //}
     }
 }

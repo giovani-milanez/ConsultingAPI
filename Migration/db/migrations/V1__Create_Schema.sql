@@ -1,5 +1,5 @@
 CREATE TABLE `users` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `is_consultant` boolean,
   `name` varchar(255),
   `email` varchar(255),
@@ -16,7 +16,7 @@ CREATE TABLE `users` (
 );
 
 CREATE TABLE `steps` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `type` varchar(255),
   `display_name` varchar(255),
   `create_schema` varchar(255),
@@ -24,8 +24,8 @@ CREATE TABLE `steps` (
 );
 
 CREATE TABLE `services` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `user_id` bigint,
   `title` varchar(255),
   `description` varchar(255),
   `is_global` boolean,
@@ -33,26 +33,26 @@ CREATE TABLE `services` (
 );
 
 CREATE TABLE `services_steps` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `step_id` int,
-  `service_id` int,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `step_id` bigint,
+  `service_id` bigint,
   `order` int,
   `title` varchar(255),
   `create_data` varchar(255)
 );
 
 CREATE TABLE `appointments` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `service_id` int,
-  `client_id` int,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `service_id` bigint,
+  `client_id` bigint,
   `start_date` datetime,
   `end_date` datetime
 );
 
 CREATE TABLE `appointment_steps` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `appointment_id` int,
-  `step_id` int,
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `appointment_id` bigint,
+  `step_id` bigint,
   `submit_data` varchar(255),
   `is_completed` varchar(255),
   `date_completed` datetime

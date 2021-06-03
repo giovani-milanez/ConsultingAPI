@@ -16,8 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Converter\Implementations\" />
-    <Folder Include="db\migrations\" />
     <Folder Include="Hypermedia\Enricher\" />
     <Folder Include="UploadDir\" />
   </ItemGroup>
