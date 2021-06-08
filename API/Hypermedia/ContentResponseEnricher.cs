@@ -7,12 +7,15 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Hypermedia
 {
     public abstract class ContentResponseEnricher<T> : IResponseEnricher where T : ISupportsHyperMedia
     {
+        private readonly object _lock = new object();
+
         public ContentResponseEnricher()
         {
 
@@ -60,6 +63,19 @@ namespace API.Hypermedia
                 }
             }
             await Task.FromResult<object>(null);
+        }
+
+        protected Task<string> GetLink(long id, IUrlHelper urlHelper, string path)
+        {
+            lock (_lock)
+            {
+                var url = new { controller = path, id = id };
+                var link = new StringBuilder(
+                    urlHelper.Link("DefaultApi", url))
+                    .Replace("%2F", "/")
+                    .Replace("?version=1.0", "").ToString();
+                return Task.FromResult(link);
+            }
         }
     }
 }

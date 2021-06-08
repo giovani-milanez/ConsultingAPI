@@ -7,8 +7,8 @@ namespace API.Business
 {
     public interface IStepBusiness
     {
-        Task<StepVO> CreateAsync(StepVO step);
-        Task<StepVO> UpdateAsync(StepVO step);
+        Task<StepVO> CreateAsync(StepCreateVO step);
+        Task<StepVO> UpdateAsync(StepEditVO step);
         Task<StepVO> FindByIdAsync(long id);
         Task<List<StepVO>> FindByTypeAsync(string type);
         Task<List<StepVO>> FindAllAsync();

@@ -26,6 +26,7 @@ using API.Business;
 using Database.Model.Context;
 using Database;
 using System.Text.Json.Serialization;
+using API.Hypermedia.Enricher;
 
 namespace API
 {
@@ -123,13 +124,13 @@ namespace API
             services.AddMvc(options =>
             {
                 options.RespectBrowserAcceptHeader = true;
-                options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml"));
+                //options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml"));
                 options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
-            })
-            .AddXmlSerializerFormatters();
+            });
+            //.AddXmlSerializerFormatters();
 
             var filterOptions = new HyperMediaFilterOptions();
-            //filterOptions.ContentResponseEnricherList.Add(new PersonEnricher());
+            filterOptions.ContentResponseEnricherList.Add(new StepEnricher());
             //filterOptions.ContentResponseEnricherList.Add(new BookEnricher());
 
             services.AddSingleton(filterOptions);

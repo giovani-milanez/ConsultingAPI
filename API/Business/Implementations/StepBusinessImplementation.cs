@@ -20,14 +20,14 @@ namespace API.Business.Implementations
             _converter = new StepConverter();
         }
 
-        public async Task<StepVO> CreateAsync(StepVO vo)
+        public async Task<StepVO> CreateAsync(StepCreateVO vo)
         {
             var entity = _converter.Parse(vo);
             entity = await _repository.CreateAsync(entity);
             return _converter.Parse(entity);
         }
 
-        public async Task<StepVO> UpdateAsync(StepVO vo)
+        public async Task<StepVO> UpdateAsync(StepEditVO vo)
         {
             var entity = _converter.Parse(vo);
             entity = await _repository.UpdateAsync(entity);

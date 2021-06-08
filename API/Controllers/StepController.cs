@@ -59,7 +59,7 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public async Task<IActionResult> Post([FromBody] StepVO item)
+        public async Task<IActionResult> Post([FromBody] StepCreateVO item)
         {
             if (item == null) return BadRequest();
             return Ok(await _business.CreateAsync(item));
@@ -70,7 +70,7 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public async Task<IActionResult> Put([FromBody] StepVO item)
+        public async Task<IActionResult> Put([FromBody] StepEditVO item)
         {
             if (item == null) return BadRequest();
             return Ok(await _business.UpdateAsync(item));
