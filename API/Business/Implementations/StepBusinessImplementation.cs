@@ -5,81 +5,65 @@ using Database.Model;
 using Database.Repository;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Business.Implementations
 {
     public class StepBusinessImplementation : IStepBusiness
     {
-        private readonly IRepository<Step> _repository;
+        private readonly IStepRepository _repository;
         private readonly StepConverter _converter;
 
-        public StepBusinessImplementation(IRepository<Step> repository)
+        public StepBusinessImplementation(IStepRepository repository)
         {
             _repository = repository;
             _converter = new StepConverter();
         }
 
-        public StepVO Create(StepVO vo)
+        public async Task<StepVO> CreateAsync(StepVO vo)
         {
             var entity = _converter.Parse(vo);
-            entity = _repository.Create(entity);
+            entity = await _repository.CreateAsync(entity);
             return _converter.Parse(entity);
         }
 
-        public StepVO Update(StepVO vo)
+        public async Task<StepVO> UpdateAsync(StepVO vo)
         {
             var entity = _converter.Parse(vo);
-            entity = _repository.Update(entity);
+            entity = await _repository.UpdateAsync(entity);
             return _converter.Parse(entity);
         }
 
-        public void Delete(long id)
+        public Task DeleteAsync(long id)
         {
-            _repository.Delete(id);
+            return _repository.DeleteAsync(id);
         }
 
-        public List<StepVO> FindAll()
+        public async Task<List<StepVO>> FindAllAsync()
         {
-            return _converter.Parse(_repository.FindAll());
+            return _converter.Parse(await _repository.FindAllAsync());
         }
 
-        public StepVO FindById(long id)
+        public async Task<StepVO> FindByIdAsync(long id)
         {
-            return _converter.Parse(_repository.FindById(id));
+            return _converter.Parse(await _repository.FindByIdAsync(id));
         }
 
-        public List<StepVO> FindByType(string type)
+        public Task<List<StepVO>> FindByTypeAsync(string type)
         {
             throw new NotImplementedException();
         }
 
-        public PagedSearchVO<StepVO> FindWithPagedSearch(string type, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(string type, string sortDirection, int pageSize, int page)
         {
-            var sort = (!string.IsNullOrWhiteSpace(sortDirection) && !sortDirection.Equals("desc")) ? "asc" : "desc";
-            var size = (pageSize < 1) ? 10 : pageSize;
-            var offset = page > 0 ? (page - 1) * size : 0;
-
-            string query = @"select * from steps p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                query = query + $" and p.type like '%{type}%' ";
-            }
-            query = query + $" order by p.type {sort} limit {size} offset {offset}";
-
-            string countQuery = "select count(*) from steps p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                countQuery = countQuery + $" and p.type like '%{type}%' ";
-            }
-            var items = _repository.FindWithPagedSearch(query);
-            int totalResults = _repository.GetCount(countQuery);
+            var result = await _repository.FindWithPagedSearchAsync(type, sortDirection, pageSize, page);
             return new PagedSearchVO<StepVO>
             {
-                CurrentPage = page,
-                List = _converter.Parse(items),
-                PageSize = size,
-                SortDirections = sort,
-                TotalResults = totalResults
+                CurrentPage = result.CurrentPage,
+                List = _converter.Parse(result.List),
+                PageSize = result.PageSize,
+                SortDirections = result.SortDirections,
+                TotalResults = result.TotalResults
             };
         }
     }

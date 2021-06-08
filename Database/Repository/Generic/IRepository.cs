@@ -1,17 +1,18 @@
 ﻿using Database.Model.Base;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Database.Repository
 {
     public interface IRepository<T> where T : BaseEntity
     {
-        T Create(T item);
-        T FindById(long id);
-        List<T> FindAll();
-        T Update(T item);
-        void Delete(long id);
-        bool Exists(long id);
-        List<T> FindWithPagedSearch(string query);
-        int GetCount(string query);
+        Task<T> CreateAsync(T item);
+        Task<T> FindByIdAsync(long id, params string[] includes);
+        Task<List<T>> FindAllAsync(params string[] includes);
+        Task<T> UpdateAsync(T item);
+        Task DeleteAsync(long id);
+        Task<bool> ExistsAsync(long id);
+        Task<List<T>> FindWithPagedSearchAsync(string query, params string[] includes);
+        Task<int> GetCountAsync(string query);
     }
 }

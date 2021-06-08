@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Database.Repository.Generic
 {
@@ -19,39 +20,40 @@ namespace Database.Repository.Generic
             dataset = _context.Set<T>();
         }           
 
-        public List<T> FindAll()
+        public Task<List<T>> FindAllAsync(params string[] includes)
         {
-            return dataset.ToList();
+            return dataset.IncludeMultiple(includes).ToListAsync();
         }
 
-        public T FindById(long id)
+        public Task<T> FindByIdAsync(long id, params string[] includes)
         {
-            return dataset.SingleOrDefault(p => p.Id.Equals(id));
+            return dataset.IncludeMultiple(includes).SingleOrDefaultAsync(p => p.Id.Equals(id));
         }
 
-        public T Create(T item)
+        public async Task<T> CreateAsync(T item)
         {
             try
             {
                 dataset.Add(item);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return item;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 throw;
             }
         }
 
-        public T Update(T item)
+        public async Task<T> UpdateAsync(T item)
         {
-            var result = dataset.SingleOrDefault(p => p.Id.Equals(item.Id));
+            var result = await dataset.SingleOrDefaultAsync(p => p.Id.Equals(item.Id));
             if (result != null)
             {
                 try
                 {
                     _context.Entry(result).CurrentValues.SetValues(item);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                     return result;
                 }
                 catch (Exception)
@@ -64,15 +66,15 @@ namespace Database.Repository.Generic
                 return null;
             }
         }
-        public void Delete(long id)
+        public async Task DeleteAsync(long id)
         {
-            var result = dataset.SingleOrDefault(p => p.Id.Equals(id));
+            var result = await dataset.SingleOrDefaultAsync(p => p.Id.Equals(id));
             if (result != null)
             {
                 try
                 {
                     dataset.Remove(result);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                 }
                 catch (Exception)
                 {
@@ -80,29 +82,43 @@ namespace Database.Repository.Generic
                 }
             }
         }    
-        public bool Exists(long id)
+        public async Task<bool> ExistsAsync(long id)
         {
-            return dataset.Any(p => p.Id.Equals(id));
+            return await dataset.AnyAsync(p => p.Id.Equals(id));
         }
 
-        public List<T> FindWithPagedSearch(string query)
+        public Task<List<T>> FindWithPagedSearchAsync(string query, params string[] includes)
         {
-            return dataset.FromSqlRaw<T>(query).ToList();
+            return dataset.FromSqlRaw<T>(query).IncludeMultiple(includes).ToListAsync();
         }
 
-        public int GetCount(string query)
+        public async Task<int> GetCountAsync(string query)
         {
             var result = "";
             using (var connection = _context.Database.GetDbConnection())
             {
-                connection.Open();
+                await connection.OpenAsync();
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = query;
-                    result = command.ExecuteScalar().ToString();
+                    var obj = await command.ExecuteScalarAsync();
+                    result = obj.ToString();
                 }
             }
             return int.Parse(result);
+        }
+    }
+
+    internal static class DataAccessExtensions
+    {
+        internal static IQueryable<T> IncludeMultiple<T>(this IQueryable<T> query,
+            params string[] includes) where T : class
+        {
+            if (includes != null)
+            {
+                query = includes.Aggregate(query, (current, include) => current.Include(include));
+            }
+            return query;
         }
     }
 }

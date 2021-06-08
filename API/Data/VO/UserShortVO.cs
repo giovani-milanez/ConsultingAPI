@@ -1,11 +1,10 @@
 ﻿namespace API.Data.VO
 {
-    public class UserSignupVO
+    public class UserShortVO
     {
+        public long Id { get; set; }
         public bool IsConsultant { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
-        public string Password { get; set; }
-        public string CpfCnpj { get; set; }
     }
 }

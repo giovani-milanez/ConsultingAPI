@@ -25,6 +25,7 @@ using API.Business.Implementations;
 using API.Business;
 using Database.Model.Context;
 using Database;
+using System.Text.Json.Serialization;
 
 namespace API
 {
@@ -107,11 +108,17 @@ namespace API
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
             }));
 
-            services.AddControllers();
+            services
+                .AddControllers();
+                //.AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
+                //.AddNewtonsoftJson(options =>
+                //    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                //);
 
-            IDBConnection dbCon = new MySqlDBConnection();
+            //IDBConnection dbCon = new MySqlDBConnection();
             var connection = Configuration["DbConnection:ConnectionString"];
-            services.AddDbContext<DatabaseContext>(options => dbCon.UseDb(options, connection));
+            services.AddDbContext<DatabaseContext>(options => options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
+            //services.AddScoped(x => new DatabaseContext(connection));
 
             services.AddMvc(options =>
             {
@@ -163,13 +170,15 @@ namespace API
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
+            //services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
             services.AddScoped<IFileBusiness, FileBusinessImplementation>();
             services.AddScoped<IStepBusiness, StepBusinessImplementation>();
+            services.AddScoped<IServiceBusiness, ServiceBusinessImplementation>();
 
             services.AddTransient<ITokenService, TokenService>();
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IStepRepository, StepRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
         }

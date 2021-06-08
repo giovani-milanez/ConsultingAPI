@@ -34,35 +34,35 @@ namespace Database.Repository
             return _context.Users.SingleOrDefaultAsync(u => (u.Id == id));
         }
 
-        public async Task<bool> RevokeTokenAsync(string email)
-        {
-            var user = await _context.Users.SingleOrDefaultAsync(u => (u.Email == email));
-            if (user == null) return false;
-            user.RefreshToken = null;
-            _context.SaveChanges();
-            return true;
-        }
+        //public async Task<bool> RevokeTokenAsync(string email)
+        //{
+        //    var user = await _context.Users.SingleOrDefaultAsync(u => (u.Email == email));
+        //    if (user == null) return false;
+        //    user.RefreshToken = null;
+        //    _context.SaveChanges();
+        //    return true;
+        //}
 
-        public async Task<User> RefreshUserInfoAsync(User user)
-        {
-            if (!_context.Users.Any(u => u.Id.Equals(user.Id))) return null;
+        //public async Task<User> RefreshUserInfoAsync(User user)
+        //{
+        //    if (!_context.Users.Any(u => u.Id.Equals(user.Id))) return null;
 
-            var result = await _context.Users.SingleOrDefaultAsync(p => p.Id.Equals(user.Id));
-            if (result != null)
-            {
-                try
-                {
-                    _context.Entry(result).CurrentValues.SetValues(user);
-                    _context.SaveChanges();
-                    return result;
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            }
-            return result;
-        }
+        //    var result = await _context.Users.SingleOrDefaultAsync(p => p.Id.Equals(user.Id));
+        //    if (result != null)
+        //    {
+        //        try
+        //        {
+        //            _context.Entry(result).CurrentValues.SetValues(user);
+        //            _context.SaveChanges();
+        //            return result;
+        //        }
+        //        catch (Exception)
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //    return result;
+        //}
 
         private string ComputeHash(string input, SHA256CryptoServiceProvider algorithm)
         {
@@ -77,7 +77,7 @@ namespace Database.Repository
             return FindByEmailAsync(providerUserId);
         }
 
-        public Task<User> AutoProvisionUserAsync(string provider, string providerUserId, List<Claim> claims)
+        public async Task<User> AutoProvisionUserAsync(string provider, string providerUserId, List<Claim> claims)
         {
             var newUser = new User
             {
@@ -86,8 +86,8 @@ namespace Database.Repository
                 CreatedAt = DateTime.UtcNow,
                 IsEmailConfirmed = true
             };
-            newUser = this.Create(newUser);
-            return Task.FromResult(newUser);
+            newUser = await this.CreateAsync(newUser);
+            return newUser;
         }
     }
 }

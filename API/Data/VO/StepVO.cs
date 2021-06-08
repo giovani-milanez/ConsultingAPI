@@ -1,6 +1,7 @@
 ﻿using API.Hypermedia;
 using API.Hypermedia.Abstract;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace API.Data.VO
 {
@@ -9,8 +10,8 @@ namespace API.Data.VO
         public long Id { get; set; }
         public string Type { get; set; }
         public string DisplayName { get; set; }
-        public string CreateSchema { get; set; }
-        public string SubmitSchema { get; set; }
+        public JsonDocument CreateSchema { get; set; }
+        public JsonDocument SubmitSchema { get; set; }
         public List<HyperMediaLink> Links { get; set; } = new List<HyperMediaLink>();
     }
 }

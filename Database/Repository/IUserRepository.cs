@@ -10,9 +10,9 @@ namespace Database.Repository
         Task<User> ValidateCredentialsAsync(string email, string password);
         Task<User> FindByEmailAsync(string email);
         Task<User> FindByIdAsync(int id);
-        Task<User> RefreshUserInfoAsync(User user);
+        //Task<User> RefreshUserInfoAsync(User user);
 
-        Task<bool> RevokeTokenAsync(string username);
+        //Task<bool> RevokeTokenAsync(string username);
         Task<User> FindByExternalProviderAsync(string provider, string providerUserId);
         Task<User> AutoProvisionUserAsync(string provider, string providerUserId, List<Claim> claims);
     }

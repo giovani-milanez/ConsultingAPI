@@ -1,18 +1,19 @@
 ﻿using API.Data.VO;
 using API.Hypermedia.Utils;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Business
 {
     public interface IStepBusiness
     {
-        StepVO Create(StepVO step);
-        StepVO Update(StepVO step);
-        StepVO FindById(long id);
-        List<StepVO> FindByType(string type);
-        List<StepVO> FindAll();
-        PagedSearchVO<StepVO> FindWithPagedSearch(
+        Task<StepVO> CreateAsync(StepVO step);
+        Task<StepVO> UpdateAsync(StepVO step);
+        Task<StepVO> FindByIdAsync(long id);
+        Task<List<StepVO>> FindByTypeAsync(string type);
+        Task<List<StepVO>> FindAllAsync();
+        Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(
             string name, string sortDirection, int pageSize, int page);
-        void Delete(long id);
+        Task DeleteAsync(long id);
     }
 }

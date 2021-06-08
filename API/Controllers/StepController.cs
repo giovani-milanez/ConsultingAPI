@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -28,14 +29,14 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult Get(
+        public async Task<IActionResult> Get(
            [FromQuery] string type,
            string sortDirection,
            int pageSize,
            int page
            )
         {
-            return Ok(_business.FindWithPagedSearch(type, sortDirection, pageSize, page));
+            return Ok(await _business.FindWithPagedSearchAsync(type, sortDirection, pageSize, page));
         }
 
         [HttpGet("{id}")]
@@ -44,9 +45,9 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult Get(long id)
+        public async Task<IActionResult> GetAsync(long id)
         {
-            var item = _business.FindById(id);
+            var item = await _business.FindByIdAsync(id);
             if (item == null)
                 return NotFound();
 
@@ -58,10 +59,10 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult Post([FromBody] StepVO item)
+        public async Task<IActionResult> Post([FromBody] StepVO item)
         {
             if (item == null) return BadRequest();
-            return Ok(_business.Create(item));
+            return Ok(await _business.CreateAsync(item));
         }
 
         [HttpPut]
@@ -69,19 +70,19 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult Put([FromBody] StepVO item)
+        public async Task<IActionResult> Put([FromBody] StepVO item)
         {
             if (item == null) return BadRequest();
-            return Ok(_business.Update(item));
+            return Ok(await _business.UpdateAsync(item));
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public IActionResult Delete(long id)
+        public async Task<IActionResult> DeleteAsync(long id)
         {
-            _business.Delete(id);
+            await _business.DeleteAsync(id);
             return NoContent();
         }
     }

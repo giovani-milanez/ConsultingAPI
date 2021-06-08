@@ -8,7 +8,5 @@ namespace API.Business
         Task<TokenVO> ValidateCredentialsAsync(UserLoginVO user);
         Task<TokenVO> ValidateCredentialsAsync(TokenVO token);
         Task<bool> RevokeTokenAsync(string email);
-
-        void RegisterNewUser(UserSignupVO user);
     }
 }

@@ -39,7 +39,7 @@ namespace IdentityServer.Identity
                 context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "Invalid credentials");
                 return;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "Invalid username or password");
             }

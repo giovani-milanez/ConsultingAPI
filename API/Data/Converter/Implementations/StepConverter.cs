@@ -3,6 +3,7 @@ using API.Data.VO;
 using Database.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace API.Data.Converter.Implementations
 {
@@ -16,8 +17,8 @@ namespace API.Data.Converter.Implementations
                 Id = origin.Id,
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
-                CreateSchema = origin.CreateSchema,
-                SubmitSchema = origin.SubmitSchema
+                CreateSchema = JsonSerializer.Serialize(origin.CreateSchema),
+                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema)
             };
         }
 
@@ -29,8 +30,8 @@ namespace API.Data.Converter.Implementations
                 Id = origin.Id,
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
-                CreateSchema = origin.CreateSchema,
-                SubmitSchema = origin.SubmitSchema
+                CreateSchema = JsonDocument.Parse(origin.CreateSchema),
+                SubmitSchema = JsonDocument.Parse(origin.SubmitSchema)
             };
         }
 

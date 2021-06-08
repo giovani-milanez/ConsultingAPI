@@ -17,8 +17,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="db\migrations\" />
-    <Folder Include="db\dataset\" />
+    <Content Include="db\migrations\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="db\dataset\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
