@@ -27,6 +27,7 @@ using Database.Model.Context;
 using Database;
 using System.Text.Json.Serialization;
 using API.Hypermedia.Enricher;
+using API.Middleware;
 
 namespace API
 {
@@ -191,6 +192,10 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+            }
+            app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
             app.UseHttpsRedirection();
 

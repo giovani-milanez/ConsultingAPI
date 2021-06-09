@@ -1,4 +1,5 @@
-﻿using API.Hypermedia.Abstract;
+﻿using API.Data;
+using API.Hypermedia.Abstract;
 using API.Hypermedia.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -33,7 +34,7 @@ namespace API.Hypermedia
             if (response.Result is OkObjectResult okObjectResult)
             {
                 return CanEnrich(okObjectResult.Value.GetType());
-            }
+            }            
             return false;
         }
 

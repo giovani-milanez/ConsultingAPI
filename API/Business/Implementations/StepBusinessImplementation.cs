@@ -1,7 +1,7 @@
 ﻿using API.Data.Converter.Implementations;
 using API.Data.VO;
+using API.Exceptions;
 using API.Hypermedia.Utils;
-using Database.Model;
 using Database.Repository;
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,12 @@ namespace API.Business.Implementations
         public async Task<StepVO> CreateAsync(StepCreateVO vo)
         {
             var entity = _converter.Parse(vo);
+            bool exists = await _repository.ExistsAsync(entity.Type);
+            if (exists)
+            {
+                throw new Exception("test ex");
+                //throw new APIException("Este tipo ja existe");
+            }
             entity = await _repository.CreateAsync(entity);
             return _converter.Parse(entity);
         }

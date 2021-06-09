@@ -2,6 +2,7 @@
 using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace Database.Repository
@@ -10,6 +11,11 @@ namespace Database.Repository
     {
         public StepRepository(DatabaseContext context) : base(context)
         {
+        }
+
+        public async Task<bool> ExistsAsync(string type)
+        {
+            return await _context.Steps.AnyAsync(p => p.Type.ToUpper().Equals(type.ToUpper()));
         }
 
         public async Task<PagedSearch<Step>> FindWithPagedSearchAsync(string type, string sortDirection, int pageSize, int page)
