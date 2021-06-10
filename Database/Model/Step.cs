@@ -2,12 +2,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Model.Base;
+using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
 namespace Database.Model
 {
     [Table("steps")]
+    [Index(nameof(UserId), Name = "steps_user")]
     public partial class Step : BaseEntity
     {
         public Step()
@@ -30,6 +32,12 @@ namespace Database.Model
         [Required]
         [Column("submit_schema", TypeName = "json")]
         public string SubmitSchema { get; set; }
+        [Column("user_id")]
+        public long? UserId { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        [InverseProperty("Steps")]
+        public virtual User User { get; set; }
 
         [InverseProperty(nameof(AppointmentStep.Step))]
         public virtual ICollection<AppointmentStep> AppointmentSteps { get; set; }

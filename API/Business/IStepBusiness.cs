@@ -1,5 +1,6 @@
 ﻿using API.Data.VO;
 using API.Hypermedia.Utils;
+using Database.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

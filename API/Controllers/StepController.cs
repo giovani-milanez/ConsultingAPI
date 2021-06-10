@@ -25,6 +25,24 @@ namespace API.Controllers
             _business = business;
         }
 
+        [HttpGet()]
+        [ProducesResponseType((200), Type = typeof(List<StepVO>))]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [TypeFilter(typeof(HyperMediaFilter))]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                return Ok(await _business.FindAllAsync());
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
+
         [HttpGet("{sortDirection}/{pageSize}/{page}")]
         [ProducesResponseType((200), Type = typeof(List<StepVO>))]
         [ProducesResponseType(204)]
@@ -56,6 +74,7 @@ namespace API.Controllers
         [TypeFilter(typeof(HyperMediaFilter))]
         public async Task<IActionResult> GetAsync(long id)
         {
+            //var user = this.User;
             try
             { 
                 var item = await _business.FindByIdAsync(id);

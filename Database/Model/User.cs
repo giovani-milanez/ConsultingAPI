@@ -15,6 +15,7 @@ namespace Database.Model
         {
             Appointments = new HashSet<Appointment>();
             Services = new HashSet<Service>();
+            Steps = new HashSet<Step>();
         }
         [Column("is_consultant")]
         public bool IsConsultant { get; set; }
@@ -47,10 +48,14 @@ namespace Database.Model
         public byte[] EmailConfirmationCode { get; set; }
         [Column("created_at", TypeName = "datetime")]
         public DateTime CreatedAt { get; set; }
+        [Column("is_admin")]
+        public bool IsAdmin { get; set; }
 
         [InverseProperty(nameof(Appointment.Client))]
         public virtual ICollection<Appointment> Appointments { get; set; }
         [InverseProperty(nameof(Service.User))]
         public virtual ICollection<Service> Services { get; set; }
+        [InverseProperty(nameof(Step.User))]
+        public virtual ICollection<Step> Steps { get; set; }
     }
 }

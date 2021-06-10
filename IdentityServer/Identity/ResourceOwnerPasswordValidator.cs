@@ -48,14 +48,14 @@ namespace IdentityServer.Identity
         //build claims array from user data
         public static Claim[] GetUserClaims(User user)
         {
+            var role = user.IsAdmin ? "admin" : user.IsConsultant ? "consultant" : "client";
             return new Claim[]
             {
-            new Claim("user_id", user.Id.ToString() ?? ""),
-            new Claim(JwtClaimTypes.Name, user.Name),
-            new Claim(JwtClaimTypes.Email, user.Email  ?? "")
-
-            //roles
-            //new Claim(JwtClaimTypes.Role, user.Role)
+                new Claim(JwtClaimTypes.Id, user.Id.ToString()),
+                new Claim(JwtClaimTypes.Name, user.Name),
+                new Claim(JwtClaimTypes.Email, user.Email),
+                //roles            
+                new Claim(JwtClaimTypes.Role, role)
             };
         }
     }

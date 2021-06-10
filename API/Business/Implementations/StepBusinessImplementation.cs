@@ -2,32 +2,44 @@
 using API.Data.VO;
 using API.Exceptions;
 using API.Hypermedia.Utils;
+using Database.Extension;
+using Database.Model;
 using Database.Repository;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace API.Business.Implementations
 {
-    public class StepBusinessImplementation : IStepBusiness
+    public class StepBusinessImplementation :  IStepBusiness
     {
+        private readonly User _requester;
         private readonly IStepRepository _repository;
         private readonly StepConverter _converter;
 
-        public StepBusinessImplementation(IStepRepository repository)
+        public StepBusinessImplementation(User requester, IStepRepository repository)
         {
+            _requester = requester;
             _repository = repository;
             _converter = new StepConverter();
         }
 
         public async Task<StepVO> CreateAsync(StepCreateVO vo)
         {
+            if (!_requester.IsConsultantOrAdmin())
+            {
+                throw new UnauthorizedException("Only consultants can create steps");
+            }
+
             var entity = _converter.Parse(vo);
+            if (_requester.IsConsultant)
+                entity.UserId = _requester.Id;
+
             bool exists = await _repository.ExistsAsync(entity.Type);
             if (exists)
             {
-                throw new Exception("test ex");
-                //throw new APIException("Este tipo ja existe");
+                throw new APIException("Type already exists");
             }
             entity = await _repository.CreateAsync(entity);
             return _converter.Parse(entity);
@@ -35,24 +47,63 @@ namespace API.Business.Implementations
 
         public async Task<StepVO> UpdateAsync(StepEditVO vo)
         {
+            if (!_requester.IsConsultantOrAdmin())
+            {
+                throw new UnauthorizedException("Only consultants can edit steps");
+            }
+            var step = await _repository.FindByIdAsync(vo.Id);
+            if (step == null)
+            {
+                throw new NotFoundException($"Can't find step of id {vo.Id}");
+            }
+            if (step.UserId == null && !_requester.IsAdmin)
+            {
+                throw new UnauthorizedException("Only admins can edit global steps");
+            }
+            if (step.UserId.Value != _requester.Id)
+            {
+                throw new UnauthorizedException("User is not allowed to edit this step");
+            }
+
             var entity = _converter.Parse(vo);
             entity = await _repository.UpdateAsync(entity);
             return _converter.Parse(entity);
         }
 
-        public Task DeleteAsync(long id)
+        public async Task DeleteAsync(long id)
         {
-            return _repository.DeleteAsync(id);
+            var step = await _repository.FindByIdAsync(id);
+            if (step == null)
+            {
+                throw new NotFoundException($"Can't find step of id {id}");
+            }
+            if (step.UserId == null && !_requester.IsAdmin)
+            {
+                throw new UnauthorizedException("Only admins can delete global steps");
+            }
+            if (step.UserId.Value != _requester.Id)
+            {
+                throw new UnauthorizedException("User is not allowed to delete this step");
+            }
+
+            await _repository.DeleteAsync(id);
         }
 
         public async Task<List<StepVO>> FindAllAsync()
         {
-            return _converter.Parse(await _repository.FindAllAsync());
+            return _converter.Parse(await _repository.FindAllAsync(_requester));
         }
 
         public async Task<StepVO> FindByIdAsync(long id)
         {
-            return _converter.Parse(await _repository.FindByIdAsync(id));
+            var step = await _repository.FindByIdAsync(id);
+            if (_requester.IsAdmin)
+                return _converter.Parse(step);
+
+            if (step.UserId != null && step.UserId.Value != _requester.Id)
+                throw new UnauthorizedException("User is not allowed to view this step");
+
+            return _converter.Parse(step);
         }
 
         public Task<List<StepVO>> FindByTypeAsync(string type)
@@ -62,7 +113,7 @@ namespace API.Business.Implementations
 
         public async Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(string type, string sortDirection, int pageSize, int page)
         {
-            var result = await _repository.FindWithPagedSearchAsync(type, sortDirection, pageSize, page);
+            var result = await _repository.FindWithPagedSearchAsync(type,  _requester, sortDirection, pageSize, page);
             return new PagedSearchVO<StepVO>
             {
                 CurrentPage = result.CurrentPage,

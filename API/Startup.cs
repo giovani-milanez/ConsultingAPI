@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Database.Repository;
 using Serilog;
 using System;
-using MySqlConnector;
 using System.Collections.Generic;
 using Database.Repository.Generic;
 using Microsoft.Net.Http.Headers;
@@ -24,10 +23,9 @@ using Microsoft.AspNetCore.Http;
 using API.Business.Implementations;
 using API.Business;
 using Database.Model.Context;
-using Database;
-using System.Text.Json.Serialization;
 using API.Hypermedia.Enricher;
 using API.Middleware;
+using API.Extension;
 
 namespace API
 {
@@ -171,6 +169,8 @@ namespace API
             });
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            // add current logged in user
+            services.AddScoped(x => x.GetService<IHttpContextAccessor>().HttpContext.GetLoggedInUser());
 
             //services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
             services.AddScoped<IFileBusiness, FileBusinessImplementation>();
@@ -182,7 +182,6 @@ namespace API
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IStepRepository, StepRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -20,6 +20,11 @@ namespace API.Extension
                 @this.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return @this.BadRequest(new ErrorResponse(fieldEx.Message, @this.Response.StatusCode, fieldEx.Errors));                
             }
+            else if (ex is UnauthorizedException)
+            {
+                @this.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                return @this.Unauthorized(new ErrorResponse(ex.Message, @this.Response.StatusCode));
+            }
             else if (ex is APIException)
             {
                 @this.Response.StatusCode = (int)HttpStatusCode.BadRequest;

@@ -1,10 +1,11 @@
 ﻿using API.Business;
 using API.Data.VO;
+using API.Extension;
 using API.Hypermedia.Filters;
-using API.Hypermedia.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -47,11 +48,18 @@ namespace API.Controllers
         [TypeFilter(typeof(HyperMediaFilter))]
         public async Task<IActionResult> GetAsync(long id)
         {
-            var item = await _business.FindByIdAsync(id);
-            if (item == null)
-                return NotFound();
+            try
+            {
+                var item = await _business.FindByIdAsync(id);
+                if (item == null)
+                    return this.ApiNotFoundRequest();
 
-            return Ok(item);
+                return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
         }
 
         [HttpPost]
@@ -61,9 +69,16 @@ namespace API.Controllers
         [TypeFilter(typeof(HyperMediaFilter))]
         public async Task<IActionResult> Post([FromBody] ServiceCreateVO item)
         {
-            if (item == null) return BadRequest();
-            var result = await _business.CreateAsync(item);
-            return Ok(result);
+            try
+            {
+                if (item == null) return BadRequest();
+                var result = await _business.CreateAsync(item);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
         }
 
         //[HttpPut]
@@ -83,8 +98,15 @@ namespace API.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> DeleteAsync(long id)
         {
-            await _business.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _business.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
         }
     }
 }

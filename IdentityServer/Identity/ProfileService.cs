@@ -34,7 +34,8 @@ namespace IdentityServer.Identity
                         var claims = ResourceOwnerPasswordValidator.GetUserClaims(user);
 
                         //set issued claims to return
-                        context.IssuedClaims = claims.Where(x => context.RequestedClaimTypes.Contains(x.Type)).ToList();
+                        //context.IssuedClaims = claims.Where(x => context.RequestedClaimTypes.Contains(x.Type)).ToList();
+                        context.IssuedClaims = claims.ToList();
                     }
                 }
                 else
@@ -53,7 +54,8 @@ namespace IdentityServer.Identity
                         {
                             var claims = ResourceOwnerPasswordValidator.GetUserClaims(user);
 
-                            context.IssuedClaims = claims.Where(x => context.RequestedClaimTypes.Contains(x.Type)).ToList();
+                            //context.IssuedClaims = claims.Where(x => context.RequestedClaimTypes.Contains(x.Type)).ToList();
+                            context.IssuedClaims = claims.ToList();
                         }
                     }
                 }

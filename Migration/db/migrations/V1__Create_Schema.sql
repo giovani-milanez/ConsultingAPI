@@ -10,7 +10,8 @@ CREATE TABLE `users` (
   `profile_picture` blob,
   `is_email_confirmed` boolean NOT NULL,
   `email_confirmation_code` binary(16),
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `is_admin` boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE `steps` (
@@ -18,7 +19,8 @@ CREATE TABLE `steps` (
   `type` varchar(255) NOT NULL,
   `display_name` varchar(255) NOT NULL,
   `create_schema` json NOT NULL,
-  `submit_schema` json NOT NULL
+  `submit_schema` json NOT NULL,
+  `user_id` bigint
 );
 
 CREATE TABLE `services` (
@@ -63,6 +65,8 @@ CREATE TABLE `ratings` (
   `stars` int NOT NULL,
   `comment` varchar(255)
 );
+
+ALTER TABLE `steps` ADD CONSTRAINT `steps_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE `services` ADD CONSTRAINT `user_service` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION;
 
