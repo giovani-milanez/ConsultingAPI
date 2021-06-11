@@ -6,7 +6,6 @@ namespace API.Data.VO
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public long UserId { get; set; }
         public virtual ICollection<ServicesStepCreateVO> Steps { get; set; }
     }
 }

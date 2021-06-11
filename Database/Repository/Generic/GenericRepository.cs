@@ -56,8 +56,9 @@ namespace Database.Repository.Generic
                     await _context.SaveChangesAsync();
                     return result;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     throw;
                 }
             }

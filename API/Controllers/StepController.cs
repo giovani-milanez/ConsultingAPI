@@ -74,7 +74,6 @@ namespace API.Controllers
         [TypeFilter(typeof(HyperMediaFilter))]
         public async Task<IActionResult> GetAsync(long id)
         {
-            //var user = this.User;
             try
             { 
                 var item = await _business.FindByIdAsync(id);

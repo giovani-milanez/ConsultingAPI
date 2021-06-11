@@ -181,6 +181,7 @@ namespace API
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IStepRepository, StepRepository>();
+            services.AddScoped<IServiceRepository, ServiceRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace API.Data.VO
 {
-    public class ServiceVO
+    public class ServiceVO : ISupportsHyperMedia
     {
         public long Id { get; set; }
         public string Title { get; set; }
@@ -14,5 +14,7 @@ namespace API.Data.VO
 
         public virtual UserShortVO User { get; set; }
         public virtual ICollection<ServicesStepVO> Steps { get; set; }
+
+        public List<HyperMediaLink> Links { get; set; } = new List<HyperMediaLink>();
     }
 }

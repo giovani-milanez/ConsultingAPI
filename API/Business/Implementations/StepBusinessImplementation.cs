@@ -47,6 +47,7 @@ namespace API.Business.Implementations
 
         public async Task<StepVO> UpdateAsync(StepEditVO vo)
         {
+            // TODO: BLOCK IF THERE IS ALREADY A SERVICE USING THIS STEP
             if (!_requester.IsConsultantOrAdmin())
             {
                 throw new UnauthorizedException("Only consultants can edit steps");
@@ -60,7 +61,7 @@ namespace API.Business.Implementations
             {
                 throw new UnauthorizedException("Only admins can edit global steps");
             }
-            if (step.UserId.Value != _requester.Id)
+            if (step.UserId != null && step.UserId.Value != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to edit this step");
             }
@@ -72,6 +73,7 @@ namespace API.Business.Implementations
 
         public async Task DeleteAsync(long id)
         {
+            // TODO: BLOCK IF THERE IS ALREADY A SERVICE USING THIS STEP
             var step = await _repository.FindByIdAsync(id);
             if (step == null)
             {
@@ -97,6 +99,11 @@ namespace API.Business.Implementations
         public async Task<StepVO> FindByIdAsync(long id)
         {
             var step = await _repository.FindByIdAsync(id);
+            if (step == null)
+            {
+                throw new NotFoundException($"Step id {id} not found");
+            }
+
             if (_requester.IsAdmin)
                 return _converter.Parse(step);
 

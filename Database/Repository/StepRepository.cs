@@ -43,7 +43,7 @@ namespace Database.Repository
                 query += $" and p.type like '%{type}%' ";
             }
             if (!requester.IsAdmin)
-                query += $" and user_id is null or user_id = {requester.Id} ";
+                query += $" and p.user_id is null or p.user_id = {requester.Id} ";
 
             query += $" order by p.type {sort} limit {size} offset {offset}";
 
@@ -52,7 +52,9 @@ namespace Database.Repository
             {
                 countQuery += $" and p.type like '%{type}%' ";
             }
-            var items = await base.FindWithPagedSearchAsync(query, "");
+            if (!requester.IsAdmin)
+                countQuery += $" and p.user_id is null or p.user_id = {requester.Id} ";
+            var items = await base.FindWithPagedSearchAsync(query);
             int totalResults = await base.GetCountAsync(countQuery);
             return new PagedSearch<Step>
             {

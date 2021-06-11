@@ -8,12 +8,11 @@ namespace API.Business
     public interface IServiceBusiness
     {
         Task<ServiceVO> CreateAsync(ServiceCreateVO service);
-        //StepVO Update(StepVO step);
+        Task<ServiceVO> UpdateAsync(ServiceEditVO service);
         Task<ServiceVO> FindByIdAsync(long id);
-        //List<StepVO> FindByType(string type);
         Task<List<ServiceVO>> FindAllAsync();
-        //PagedSearchVO<StepVO> FindWithPagedSearch(
-        //    string name, string sortDirection, int pageSize, int page);
+        Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(
+            string title, string sortDirection, int pageSize, int page);
         Task DeleteAsync(long id);
     }
 }
