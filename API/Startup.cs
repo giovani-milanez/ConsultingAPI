@@ -176,12 +176,14 @@ namespace API
             services.AddScoped<IFileBusiness, FileBusinessImplementation>();
             services.AddScoped<IStepBusiness, StepBusinessImplementation>();
             services.AddScoped<IServiceBusiness, ServiceBusinessImplementation>();
+            services.AddScoped<IAppointmentBusiness, AppointmentBusinessImplementation>();
 
             services.AddTransient<ITokenService, TokenService>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IStepRepository, StepRepository>();
             services.AddScoped<IServiceRepository, ServiceRepository>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }
 
