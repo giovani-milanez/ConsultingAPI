@@ -1,17 +1,16 @@
 CREATE TABLE `users` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
-  `is_consultant` boolean NOT NULL,
+  `type` ENUM ('client', 'consultant', 'admin') NOT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255),
   `cpf_cnpj` varchar(255),
   `short_description` varchar(255),
   `long_description` varchar(255),
-  `profile_picture` blob,
+  `profile_picture` bigint,
   `is_email_confirmed` boolean NOT NULL,
   `email_confirmation_code` binary(16),
-  `created_at` datetime NOT NULL,
-  `is_admin` boolean NOT NULL DEFAULT false
+  `created_at` datetime NOT NULL
 );
 
 CREATE TABLE `steps` (
@@ -20,7 +19,9 @@ CREATE TABLE `steps` (
   `display_name` varchar(255) NOT NULL,
   `create_schema` json NOT NULL,
   `submit_schema` json NOT NULL,
-  `user_id` bigint
+  `user_id` bigint,
+  `allow_file_upload` boolean NOT NULL DEFAULT false,
+  `target_user` ENUM ('client', 'consultant', 'admin') NOT NULL DEFAULT "client"
 );
 
 CREATE TABLE `services` (
@@ -66,6 +67,24 @@ CREATE TABLE `ratings` (
   `comment` varchar(255)
 );
 
+CREATE TABLE `files` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `guid` binary(16) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `size` bigint NOT NULL,
+  `content` blob NOT NULL,
+  `uploader_id` bigint NOT NULL
+);
+
+CREATE TABLE `appointment_step_files` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `appointment_step_id` bigint NOT NULL,
+  `file_id` bigint NOT NULL
+);
+
+ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
 ALTER TABLE `steps` ADD CONSTRAINT `steps_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE `services` ADD CONSTRAINT `user_service` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -83,3 +102,9 @@ ALTER TABLE `appointment_steps` ADD CONSTRAINT `appointment_steps_appointment` F
 ALTER TABLE `appointment_steps` ADD CONSTRAINT `appointment_steps_steps` FOREIGN KEY (`step_id`) REFERENCES `steps` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 ALTER TABLE `ratings` ADD CONSTRAINT `ratings_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE `files` ADD CONSTRAINT `files_user` FOREIGN KEY (`uploader_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_appointment` FOREIGN KEY (`appointment_step_id`) REFERENCES `appointment_steps` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_file` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;

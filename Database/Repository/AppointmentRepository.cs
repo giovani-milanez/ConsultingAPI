@@ -1,4 +1,5 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
@@ -17,10 +18,10 @@ namespace Database.Repository
 
         public Task<List<Appointment>> FindAllAsync(User requester, params string[] includes)
         {
-            if (requester.IsAdmin)
+            if (requester.IsAdmin())
                 return base.FindAllAsync(includes);
 
-            if (requester.IsConsultant)
+            if (requester.IsConsultant())
             {
                 return this._context.Appointments
                     .IncludeMultiple(includes)
@@ -55,12 +56,12 @@ namespace Database.Repository
                 filter += $" and u.name like '%{clientName}%' ";
             }
 
-            if (requester.IsConsultant)
+            if (requester.IsConsultant())
             {
                 join += " join services s on (s.id = p.service_id) ";
                 filter += $" and s.user_id = {requester.Id} ";
             }
-            else if (!requester.IsAdmin)
+            else if (!requester.IsAdmin())
             {
                 filter += $" and p.client_id = {requester.Id} ";
             }
@@ -77,12 +78,12 @@ namespace Database.Repository
                 countJoin += " join users u on (u.id = p.client_id) ";
                 countFilter += $" and u.name like '%{clientName}%' ";
             }
-            if (requester.IsConsultant)
+            if (requester.IsConsultant())
             {
                 countJoin += " join services s on (s.id = p.service_id) ";
                 countFilter += $" and s.user_id = {requester.Id} ";
             }
-            else if (!requester.IsAdmin)
+            else if (!requester.IsAdmin())
             {
                 countFilter += $" and p.client_id = {requester.Id} ";
             }

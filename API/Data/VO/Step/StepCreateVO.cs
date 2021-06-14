@@ -1,7 +1,4 @@
-﻿using API.Hypermedia;
-using API.Hypermedia.Abstract;
-using System.Collections.Generic;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace API.Data.VO
 {
@@ -11,5 +8,7 @@ namespace API.Data.VO
         public string DisplayName { get; set; }
         public JsonDocument CreateSchema { get; set; }
         public JsonDocument SubmitSchema { get; set; }
+        public bool AllowFileUpload { get; set; }
+        public string TargetUser { get; set; }
     }
 }

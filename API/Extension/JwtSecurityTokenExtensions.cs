@@ -1,4 +1,5 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -20,7 +21,7 @@ namespace API.Extension
                     case "id": user.Id = Convert.ToInt32(claim.Value); break;
                     case "name": user.Name = claim.Value; break;
                     case "email": user.Email = claim.Value; break;
-                    case "role": user.IsAdmin = claim.Value == "admin"; user.IsConsultant = claim.Value == "consultant"; break;
+                    case "role": user.Type = claim.Value; break;
                     default:
                         break;
                 }

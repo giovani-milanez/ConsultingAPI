@@ -82,6 +82,7 @@ namespace Database.Repository
             var newUser = new User
             {
                 Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value,
+                Type = "client",
                 Email = providerUserId,
                 CreatedAt = DateTime.UtcNow,
                 IsEmailConfirmed = true

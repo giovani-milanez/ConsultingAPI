@@ -1,9 +1,13 @@
-﻿namespace API.Data.VO
+﻿using System;
+
+namespace API.Data.VO
 {
     public class FileDetailVO
     {
-        public string DocumentName { get; set; }
-        public string DocType { get; set; }
-        public string DocUrl { get; set; }
+        public Guid Guid { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public long Size { get; set; }
+        public string Url { get; set; }
     }
 }

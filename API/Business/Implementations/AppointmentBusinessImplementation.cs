@@ -46,7 +46,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Service id {vo.ServiceId} not found");
             }
 
-            if (!_requester.IsAdmin && service.UserId != _requester.Id)
+            if (!_requester.IsAdmin() && service.UserId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to create an appointment for this service");
             }
@@ -77,14 +77,16 @@ namespace API.Business.Implementations
 
         public async Task<AppointmentStepVO> SubmitStep(AppointmentStepSubmitVO submit)
         {
-            var entity = await _repository.FindByIdAsync(submit.AppointmentId, nameof(Appointment.AppointmentSteps));
+            var entity = await _repository.FindByIdAsync(submit.AppointmentId,
+                nameof(Appointment.AppointmentSteps),
+                $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.Step)}");
 
             if (entity == null)
             {
                 throw new NotFoundException($"Appointment id {submit.AppointmentId} not found");
             }
 
-            if (!_requester.IsAdmin && entity.ClientId != _requester.Id)
+            if (!_requester.IsAdmin() && entity.ClientId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to submit this step on this appointment");
             }
@@ -99,7 +101,12 @@ namespace API.Business.Implementations
             {
                 throw new APIException("Step already completed");
             }
-            
+
+            if (!_requester.IsAdmin() && step.Step.TargetUser != _requester.Type)
+            {
+                throw new UnauthorizedException($"Only the {step.Step.TargetUser} user can submit this step");
+            }
+
             // TODO: Check against json-schema
 
             step.SubmitData = JsonSerializer.Serialize(submit.SubmitData);
@@ -118,14 +125,16 @@ namespace API.Business.Implementations
 
         public async Task<AppointmentStepVO> EditStep(AppointmentStepSubmitVO submit)
         {
-            var entity = await _repository.FindByIdAsync(submit.AppointmentId, nameof(Appointment.AppointmentSteps));
+            var entity = await _repository.FindByIdAsync(submit.AppointmentId, 
+                nameof(Appointment.AppointmentSteps),
+                $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.Step)}");
 
             if (entity == null)
             {
                 throw new NotFoundException($"Appointment id {submit.AppointmentId} not found");
             }
 
-            if (!_requester.IsAdmin && entity.ClientId != _requester.Id)
+            if (!_requester.IsAdmin() && entity.ClientId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to submit this step on this appointment");
             }
@@ -141,6 +150,11 @@ namespace API.Business.Implementations
                 throw new APIException("Step not completed yet");
             }
 
+            if (!_requester.IsAdmin() && step.Step.TargetUser != _requester.Type)
+            {
+                throw new UnauthorizedException($"Only the {step.Step.TargetUser} user can submit this step");
+            }
+
             // TODO: Check against json-schema
 
             step.SubmitData = JsonSerializer.Serialize(submit.SubmitData);
@@ -152,7 +166,7 @@ namespace API.Business.Implementations
 
         public async Task DeleteAsync(long id)
         {
-            if (!_requester.IsAdmin)
+            if (!_requester.IsAdmin())
             {
                 throw new UnauthorizedException("User must be admin to delete an appointment");
             }
@@ -180,11 +194,6 @@ namespace API.Business.Implementations
 
         public async Task<AppointmentVO> FindByIdAsync(long id)
         {
-            if (!_requester.IsConsultantOrAdmin())
-            {
-                throw new UnauthorizedException("User must be consultant to view a service");
-            }
-
             var entity = await _repository.FindByIdAsync(id,
                     $"{nameof(Appointment.Service)}.{nameof(Service.User)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
@@ -197,7 +206,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Appointment id {id} not found");
             }
 
-            if (!_requester.IsAdmin && (entity.ClientId != _requester.Id && entity.Service.UserId != _requester.Id))
+            if (!_requester.IsAdmin() && (entity.ClientId != _requester.Id && entity.Service.UserId != _requester.Id))
             {
                 throw new UnauthorizedException("User is not allowed to view this appointment");
             }

@@ -1,4 +1,5 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
@@ -38,7 +39,7 @@ namespace Database.Repository
 
         public Task<List<Service>> FindAllAsync(User requester, params string[] includes)
         {
-            if (requester.IsAdmin)
+            if (requester.IsAdmin())
                 return base.FindAllAsync(includes);
 
             return this._context.Services
@@ -58,7 +59,7 @@ namespace Database.Repository
             {
                 query += $" and p.title like '%{title}%' ";
             }
-            if (!requester.IsAdmin)
+            if (!requester.IsAdmin())
                 query += $" and p.user_id = {requester.Id} ";
 
             query += $" order by p.title {sort} limit {size} offset {offset}";
@@ -68,7 +69,7 @@ namespace Database.Repository
             {
                 countQuery += $" and p.title like '%{title}%' ";
             }
-            if (!requester.IsAdmin)
+            if (!requester.IsAdmin())
                 countQuery += $" and p.user_id = {requester.Id} ";
 
             var items = await base.FindWithPagedSearchAsync(query);

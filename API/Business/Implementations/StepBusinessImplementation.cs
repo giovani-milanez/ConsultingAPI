@@ -2,6 +2,7 @@
 using API.Data.VO;
 using API.Exceptions;
 using API.Hypermedia.Utils;
+using Database.Enum;
 using Database.Extension;
 using Database.Model;
 using Database.Repository;
@@ -32,8 +33,13 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("Only consultants can create steps");
             }
 
+            if (vo.TargetUser != AccountType.CLIENT && vo.TargetUser != AccountType.CONSULTANT)
+            {
+                throw new FieldValidationException("invalid target user", new Data.FieldError(nameof(vo.TargetUser), $"must be equal '{AccountType.CLIENT}' or '{AccountType.CONSULTANT}'"));
+            }
+
             var entity = _converter.Parse(vo);
-            if (_requester.IsConsultant)
+            if (_requester.IsConsultant())
                 entity.UserId = _requester.Id;
 
             bool exists = await _repository.ExistsAsync(entity.Type);
@@ -52,12 +58,16 @@ namespace API.Business.Implementations
             {
                 throw new UnauthorizedException("Only consultants can edit steps");
             }
+            if (vo.TargetUser != AccountType.CLIENT && vo.TargetUser != AccountType.CONSULTANT)
+            {
+                throw new FieldValidationException("invalid target user", new Data.FieldError(nameof(vo.TargetUser), $"must be equal '{AccountType.CLIENT}' or '{AccountType.CONSULTANT}'"));
+            }
             var step = await _repository.FindByIdAsync(vo.Id);
             if (step == null)
             {
                 throw new NotFoundException($"Can't find step of id {vo.Id}");
             }
-            if (step.UserId == null && !_requester.IsAdmin)
+            if (step.UserId == null && !_requester.IsAdmin())
             {
                 throw new UnauthorizedException("Only admins can edit global steps");
             }
@@ -79,7 +89,7 @@ namespace API.Business.Implementations
             {
                 throw new NotFoundException($"Can't find step of id {id}");
             }
-            if (step.UserId == null && !_requester.IsAdmin)
+            if (step.UserId == null && !_requester.IsAdmin())
             {
                 throw new UnauthorizedException("Only admins can delete global steps");
             }
@@ -104,7 +114,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Step id {id} not found");
             }
 
-            if (_requester.IsAdmin)
+            if (_requester.IsAdmin())
                 return _converter.Parse(step);
 
             if (step.UserId != null && step.UserId.Value != _requester.Id)

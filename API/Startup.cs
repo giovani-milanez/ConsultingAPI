@@ -184,6 +184,7 @@ namespace API
             services.AddScoped<IStepRepository, StepRepository>();
             services.AddScoped<IServiceRepository, ServiceRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IFileRepository, FileRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }
 

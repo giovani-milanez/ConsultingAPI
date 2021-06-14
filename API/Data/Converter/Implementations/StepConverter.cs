@@ -18,7 +18,9 @@ namespace API.Data.Converter.Implementations
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
                 CreateSchema = JsonSerializer.Serialize(origin.CreateSchema),
-                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema)
+                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema),
+                AllowFileUpload = origin.AllowFileUpload,
+                TargetUser = origin.TargetUser
             };
         }
 
@@ -31,7 +33,9 @@ namespace API.Data.Converter.Implementations
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
                 CreateSchema = JsonDocument.Parse(origin.CreateSchema),
-                SubmitSchema = JsonDocument.Parse(origin.SubmitSchema)
+                SubmitSchema = JsonDocument.Parse(origin.SubmitSchema),
+                AllowFileUpload = origin.AllowFileUpload,
+                TargetUser = origin.TargetUser
             };
         }
 
@@ -43,7 +47,9 @@ namespace API.Data.Converter.Implementations
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
                 CreateSchema = JsonSerializer.Serialize(origin.CreateSchema),
-                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema)
+                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema),
+                AllowFileUpload = origin.AllowFileUpload,
+                TargetUser = origin.TargetUser
             };
         }
 
@@ -56,7 +62,9 @@ namespace API.Data.Converter.Implementations
                 Type = origin.Type,
                 DisplayName = origin.DisplayName,
                 CreateSchema = JsonSerializer.Serialize(origin.CreateSchema),
-                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema)
+                SubmitSchema = JsonSerializer.Serialize(origin.SubmitSchema),
+                AllowFileUpload = origin.AllowFileUpload,
+                TargetUser = origin.TargetUser
             };
         }
 

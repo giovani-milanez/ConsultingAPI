@@ -1,5 +1,7 @@
 ﻿using API.Data.VO;
+using Database.Model;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,8 +9,10 @@ namespace API.Business
 {
     public interface IFileBusiness
     {
-        public byte[] GetFile(string filename);
-        public Task<FileDetailVO> SaveFileToDisk(IFormFile file);
-        public Task<List<FileDetailVO>> SaveFilesToDisk(IList<IFormFile> files);
+        Task<File> GetFileByGuidAsync(Guid fileGuid);
+        Task<FileDetailVO> SaveProfilePicAsync(IFormFile file);
+        Task<List<FileDetailVO>> SaveStepFilesAsync(IList<IFormFile> files, long appointmentId, long stepId);
+        Task<FileDetailVO> SaveStepFileAsync(IFormFile file, long appointmentId, long stepId);
+        Task DeleteFileAsync(Guid fileGuid);
     }
 }

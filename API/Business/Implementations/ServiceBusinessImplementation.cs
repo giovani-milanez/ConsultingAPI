@@ -95,7 +95,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Can't find service of id {vo.Id}");
             }
 
-            if (!_requester.IsAdmin && found.UserId != _requester.Id)
+            if (!_requester.IsAdmin() && found.UserId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to edit this service");
             }
@@ -163,7 +163,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Service id {id} not found");
             }
 
-            if (!_requester.IsAdmin && entity.UserId != _requester.Id)
+            if (!_requester.IsAdmin() && entity.UserId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to view this service");
             }
@@ -209,7 +209,7 @@ namespace API.Business.Implementations
                 throw new NotFoundException($"Can't find service of id {id}");
             }
 
-            if (!_requester.IsAdmin && entity.UserId != _requester.Id)
+            if (!_requester.IsAdmin() && entity.UserId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to delete this service");
             }

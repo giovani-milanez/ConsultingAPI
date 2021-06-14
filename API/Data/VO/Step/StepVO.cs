@@ -12,6 +12,8 @@ namespace API.Data.VO
         public string DisplayName { get; set; }
         public JsonDocument CreateSchema { get; set; }
         public JsonDocument SubmitSchema { get; set; }
+        public bool AllowFileUpload { get; set; }
+        public string TargetUser { get; set; }
         public List<HyperMediaLink> Links { get; set; } = new List<HyperMediaLink>();
     }
 }

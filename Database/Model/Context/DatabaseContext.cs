@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Database.Model;
+﻿using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -22,6 +19,8 @@ namespace Database.Model.Context
 
         public virtual DbSet<Appointment> Appointments { get; set; }
         public virtual DbSet<AppointmentStep> AppointmentSteps { get; set; }
+        public virtual DbSet<AppointmentStepFile> AppointmentStepFiles { get; set; }
+        public virtual DbSet<File> Files { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
         public virtual DbSet<Service> Services { get; set; }
         public virtual DbSet<ServicesStep> ServicesSteps { get; set; }
@@ -70,6 +69,29 @@ namespace Database.Model.Context
                     .HasConstraintName("appointment_steps_steps");
             });
 
+            modelBuilder.Entity<AppointmentStepFile>(entity =>
+            {
+                entity.HasOne(d => d.AppointmentStep)
+                    .WithMany(p => p.AppointmentStepFiles)
+                    .HasForeignKey(d => d.AppointmentStepId)
+                    .HasConstraintName("appointment_step_files_appointment");
+
+                entity.HasOne(d => d.File)
+                    .WithMany(p => p.AppointmentStepFiles)
+                    .HasForeignKey(d => d.FileId)
+                    .HasConstraintName("appointment_step_files_file");
+            });
+
+            modelBuilder.Entity<File>(entity =>
+            {
+                entity.Property(e => e.Guid).IsFixedLength(true);
+
+                entity.HasOne(d => d.Uploader)
+                    .WithMany(p => p.Files)
+                    .HasForeignKey(d => d.UploaderId)
+                    .HasConstraintName("files_user");
+            });
+
             modelBuilder.Entity<Rating>(entity =>
             {
                 entity.HasOne(d => d.Appointment)
@@ -101,9 +123,26 @@ namespace Database.Model.Context
                     .HasConstraintName("services_steps_steps");
             });
 
+            modelBuilder.Entity<Step>(entity =>
+            {
+                entity.Property(e => e.TargetUser).HasDefaultValueSql("'client'");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Steps)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("steps_user");
+            });
+
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.EmailConfirmationCode).IsFixedLength(true);
+
+                entity.HasOne(d => d.ProfilePictureNavigation)
+                    .WithMany(p => p.Users)
+                    .HasForeignKey(d => d.ProfilePicture)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("user_profile_picture");
             });
 
             OnModelCreatingPartial(modelBuilder);

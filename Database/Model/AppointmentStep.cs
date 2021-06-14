@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Model.Base;
@@ -13,6 +14,11 @@ namespace Database.Model
     [Index(nameof(StepId), Name = "appointment_steps_steps")]
     public partial class AppointmentStep : BaseEntity
     {
+        public AppointmentStep()
+        {
+            AppointmentStepFiles = new HashSet<AppointmentStepFile>();
+        }
+
         [Column("appointment_id")]
         public long AppointmentId { get; set; }
         [Column("step_id")]
@@ -31,5 +37,7 @@ namespace Database.Model
         [ForeignKey(nameof(StepId))]
         [InverseProperty("AppointmentSteps")]
         public virtual Step Step { get; set; }
+        [InverseProperty(nameof(AppointmentStepFile.AppointmentStep))]
+        public virtual ICollection<AppointmentStepFile> AppointmentStepFiles { get; set; }
     }
 }

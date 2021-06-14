@@ -1,5 +1,6 @@
 ﻿using API.Data.Converter.Contract;
 using API.Data.VO;
+using Database.Extension;
 using Database.Model;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace API.Data.Converter.Implementations
             return new UserShortVO
             {
                 Id = origin.Id,
-                IsConsultant = origin.IsConsultant,
+                IsConsultant = origin.IsConsultant(),
                 Name = origin.Name,
                 Email = origin.Email
             };

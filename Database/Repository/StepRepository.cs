@@ -1,4 +1,5 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
@@ -22,7 +23,7 @@ namespace Database.Repository
 
         public Task<List<Step>> FindAllAsync(User requester, params string[] includes)
         {
-            if (requester.IsAdmin)
+            if (requester.IsAdmin())
                 return base.FindAllAsync(includes);
 
             return this._context.Steps
@@ -42,7 +43,7 @@ namespace Database.Repository
             {
                 query += $" and p.type like '%{type}%' ";
             }
-            if (!requester.IsAdmin)
+            if (!requester.IsAdmin())
                 query += $" and p.user_id is null or p.user_id = {requester.Id} ";
 
             query += $" order by p.type {sort} limit {size} offset {offset}";
@@ -52,7 +53,7 @@ namespace Database.Repository
             {
                 countQuery += $" and p.type like '%{type}%' ";
             }
-            if (!requester.IsAdmin)
+            if (!requester.IsAdmin())
                 countQuery += $" and p.user_id is null or p.user_id = {requester.Id} ";
             var items = await base.FindWithPagedSearchAsync(query);
             int totalResults = await base.GetCountAsync(countQuery);
