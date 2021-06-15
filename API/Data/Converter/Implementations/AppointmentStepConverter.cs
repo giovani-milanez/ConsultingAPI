@@ -9,11 +9,11 @@ namespace API.Data.Converter.Implementations
 {
     public class AppointmentStepConverter : IParser<AppointmentStep, AppointmentStepVO>
     {
-        //private readonly StepConverter StepConverter;
+        private FileConverter FileConverter { get; set; }
 
-        public AppointmentStepConverter()
+        public AppointmentStepConverter(FileConverter fileConverter)
         {
-            //StepConverter = new StepConverter();
+            FileConverter = fileConverter;
         }
 
         public AppointmentStepVO Parse(AppointmentStep origin)
@@ -26,7 +26,8 @@ namespace API.Data.Converter.Implementations
                 StepId = origin.StepId,
                 SubmitData = JsonDocument.Parse(origin.SubmitData),
                 IsCompleted = origin.IsCompleted,
-                DateCompleted = origin.DateCompleted                
+                DateCompleted = origin.DateCompleted,
+                Files = origin.AppointmentStepFiles == null ? new List<FileDetailVO>() : origin.AppointmentStepFiles.Select(x => FileConverter.Parse(x.File)).ToList()
             };
         }
 

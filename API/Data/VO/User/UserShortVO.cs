@@ -6,5 +6,6 @@
         public bool IsConsultant { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        public string ProfilePicUrl { get; set; }
     }
 }

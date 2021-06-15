@@ -16,15 +16,17 @@ namespace API.Business.Implementations
     {
         private readonly User _requester;
         private readonly IServiceRepository _repository;
+        private readonly IFileRepository _fileRepository;
         private readonly IStepBusiness _step;
         private readonly ServiceConverter _converter;
 
-        public ServiceBusinessImplementation(User requester, IServiceRepository repository, IStepBusiness step)
+        public ServiceBusinessImplementation(User requester, IServiceRepository repository, IFileRepository fileRepository, IStepBusiness step, FileConverter fileConverter)
         {
             _requester = requester;
             _repository = repository;
+            _fileRepository = fileRepository;
             _step = step;
-            _converter = new ServiceConverter();
+            _converter = new ServiceConverter(fileConverter);
         }
 
         public async Task<ServiceVO> CreateAsync(ServiceCreateVO vo)
@@ -155,7 +157,7 @@ namespace API.Business.Implementations
             var entity = await _repository.FindByIdAsync(id,
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    nameof(Service.User)
+                    $"{nameof(Service.User)}"
                 );
             
             if (entity == null)
@@ -168,18 +170,31 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User is not allowed to view this service");
             }
 
+            // fill in pic url
+            if (entity.User.ProfilePicture.HasValue)
+            {
+                entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
+            }
+
             return _converter.Parse(entity);
         }
 
         public async Task<List<ServiceVO>> FindAllAsync()
         {
-            return _converter.Parse(
-                await _repository.FindAllAsync(_requester,
+            var all = await _repository.FindAllAsync(_requester,
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    nameof(Service.User)
-                )
-            );
+                    $"{nameof(Service.User)}"
+                );
+            foreach (var entity in all)
+            {
+                // fill in pic url
+                if (entity.User.ProfilePicture.HasValue)
+                {
+                    entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
+                }
+            }
+            return _converter.Parse(all);
         }
 
         public async Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(string title, string sortDirection, int pageSize, int page)

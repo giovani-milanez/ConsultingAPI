@@ -13,6 +13,16 @@ namespace Database.Repository
         {
         }
 
+        public Task<File> GetFileDetailsByIdAsync(long fileId)
+        {
+            // all fields BUT content
+            var file = _context.Files
+                .Where(x => x.Id == fileId)
+                .Select(x => new File { Id = x.Id, Guid = x.Guid, Name = x.Name, Type = x.Type, Size = x.Size, UploaderId = x.UploaderId })
+                .FirstOrDefault();
+            return Task.FromResult(file);
+        }
+
         public async Task DeleteFileByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
@@ -33,7 +43,10 @@ namespace Database.Repository
         public Task<File> GetFileDetailsByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            var file = _context.Files.Where(x => x.Guid == guidBytes).Select(x => new File { UploaderId = x.UploaderId }).FirstOrDefault();
+            var file = _context.Files
+                .Where(x => x.Guid == guidBytes)
+                .Select(x => new File { Id = x.Id, Guid = x.Guid, Name = x.Name, Type = x.Type, Size = x.Size, UploaderId = x.UploaderId })
+                .FirstOrDefault();
             return Task.FromResult(file);
         }
 
@@ -47,7 +60,7 @@ namespace Database.Repository
         //public async Task<File> SaveFileAsync(File file, User requester)
         //{
         //    await base.CreateAsync(file);
-                        
+
         //    var user = _context.Users.Where(x => x.Id == requester.Id).FirstOrDefault();
         //    if (user != null)
         //    {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 #nullable disable
 
@@ -33,6 +34,8 @@ namespace Database.Model.Context
             {
                 optionsBuilder.UseMySql(this.ConnnectionString, ServerVersion.AutoDetect(this.ConnnectionString));
             }
+            // TODO: remove on production
+            optionsBuilder.LogTo(Console.WriteLine);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

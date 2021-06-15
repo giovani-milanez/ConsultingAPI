@@ -36,7 +36,10 @@ namespace API.Business.Implementations
             _userRepository = userRepository;
             _appointmentFileRepository = appointmentFileRepository;
             _appointmentRepository = appointmentRepository;
-            _converter = new FileConverter(_context.HttpContext.Request.Host);
+            var url = _context.HttpContext.Request.IsHttps ? "https://" : "http://";
+            url += _context.HttpContext.Request.Host;
+            url += "/api/v1.0/file";
+            _converter = new FileConverter(url);
         }
 
         public Task<Database.Model.File> GetFileByGuidAsync(Guid fileGuid)
@@ -46,7 +49,7 @@ namespace API.Business.Implementations
 
         public async Task<FileDetailVO> SaveProfilePicAsync(IFormFile formFile)
         {
-            if (formFile == null || formFile.Length > 0)
+            if (formFile == null || formFile.Length <= 0)
             {
                 throw new APIException("Empty file provided");
             }
@@ -63,18 +66,26 @@ namespace API.Business.Implementations
                 file.Content = ms.ToArray();
             }
             file = await _fileRepository.CreateAsync(file);
-                
+
+
             // update users profile pic
             var user = await _userRepository.FindByIdAsync(_requester.Id);
+            var previousPic = user.ProfilePicture;
             user.ProfilePicture = file.Id;
             await _userRepository.UpdateAsync(user);
+            
+            // remove old profile pic
+            if (previousPic.HasValue)
+            {
+                await _fileRepository.DeleteAsync(previousPic.Value);
+            }
 
             return _converter.Parse(file);
         }           
 
         public async Task<FileDetailVO> SaveStepFileAsync(IFormFile formFile, long appointmentId, long stepId)
         {
-            if (formFile == null || formFile.Length > 0)
+            if (formFile == null || formFile.Length <= 0)
             {
                 throw new APIException("Empty file provided");
             }

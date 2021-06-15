@@ -13,11 +13,11 @@ namespace API.Data.Converter.Implementations
         private readonly ServiceConverter ServiceConverter;
         private readonly UserConverter UserConverter;
 
-        public AppointmentConverter()
+        public AppointmentConverter(FileConverter fileConverter)
         {
-            AppointmentStepConverter = new AppointmentStepConverter();
-            ServiceConverter = new ServiceConverter();
-            UserConverter = new UserConverter();
+            AppointmentStepConverter = new AppointmentStepConverter(fileConverter);
+            ServiceConverter = new ServiceConverter(fileConverter);
+            UserConverter = new UserConverter(fileConverter);
         }
 
         public Appointment Parse(AppointmentCreateVO origin)

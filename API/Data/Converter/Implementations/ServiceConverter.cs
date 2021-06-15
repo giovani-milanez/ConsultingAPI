@@ -11,10 +11,10 @@ namespace API.Data.Converter.Implementations
         private readonly ServicesStepConverter ServicesStepConverter;
         private readonly UserConverter UserConverter;
 
-        public ServiceConverter()
+        public ServiceConverter(FileConverter fileConverter)
         {
             ServicesStepConverter = new ServicesStepConverter();
-            UserConverter = new UserConverter();
+            UserConverter = new UserConverter(fileConverter);
         }
 
         public Service Parse(ServiceCreateVO origin)

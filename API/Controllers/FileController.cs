@@ -24,6 +24,7 @@ namespace API.Controllers
         }
 
         [HttpPost("profilePic")]
+        [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [Authorize]
         [ProducesResponseType((200), Type = typeof(FileDetailVO))]
         [ProducesResponseType(400)]
@@ -42,8 +43,9 @@ namespace API.Controllers
             }
         }       
 
-        [HttpPost("appointment/{appointmentId}/step/{stepId}/uploadFile")]
+        [HttpPost("appointment/{appointmentId}/step/{stepId}/document")]
         [Authorize]
+        [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [ProducesResponseType((200), Type = typeof(FileDetailVO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -60,8 +62,9 @@ namespace API.Controllers
                 return this.ApiResulFromException(ex);
             }
         }
-        [HttpPost("appointment/{appointmentId}/step/{stepId}/uploadFiles")]
+        [HttpPost("appointment/{appointmentId}/step/{stepId}/documents")]
         [Authorize]
+        [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [ProducesResponseType((200), Type = typeof(List<FileDetailVO>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -84,11 +87,11 @@ namespace API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> DeleteFileAsync(Guid guid)
+        public async Task<IActionResult> DeleteFileAsync(Guid fileGuid)
         {
             try
             {
-                await _fileBusiness.DeleteFileAsync(guid);
+                await _fileBusiness.DeleteFileAsync(fileGuid);
                 return NoContent();
             }
             catch (Exception ex)
@@ -98,10 +101,9 @@ namespace API.Controllers
         }
 
         [HttpGet("{fileGuid}")]
+        [AllowAnonymous]
         [ProducesResponseType((200), Type = typeof(byte[]))]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
         [Produces("application/octet-stream")]
         public async Task<IActionResult> DownloadFileAsync(Guid fileGuid)
         {
@@ -110,14 +112,12 @@ namespace API.Controllers
                 var file = await _fileBusiness.GetFileByGuidAsync(fileGuid);
                 if (file == null)
                 {
-                    return this.ApiNotFoundRequest($"File not found");
+                    var result = new ContentResult();
+                    result.StatusCode = 404;
+                    return result;
                 }
-                HttpContext.Response.ContentType = 
-                    $"application/{Path.GetExtension(file.Type).Replace(".", "")}";
-                HttpContext.Response.Headers.Add("content-length", file.Size.ToString());
-
-                await HttpContext.Response.Body.WriteAsync(file.Content, 0, (int)file.Size);
-                return new ContentResult();
+                var contentType = $"application/{Path.GetExtension(file.Type).Replace(".", "")}";
+                return File(file.Content, contentType, file.Name);
             }
             catch (Exception ex)
             {

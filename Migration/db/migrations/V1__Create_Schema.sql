@@ -73,7 +73,7 @@ CREATE TABLE `files` (
   `name` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `size` bigint NOT NULL,
-  `content` blob NOT NULL,
+  `content` mediumblob NOT NULL,
   `uploader_id` bigint NOT NULL
 );
 
@@ -83,7 +83,7 @@ CREATE TABLE `appointment_step_files` (
   `file_id` bigint NOT NULL
 );
 
-ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture`) REFERENCES `files` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 ALTER TABLE `steps` ADD CONSTRAINT `steps_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
@@ -108,3 +108,5 @@ ALTER TABLE `files` ADD CONSTRAINT `files_user` FOREIGN KEY (`uploader_id`) REFE
 ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_appointment` FOREIGN KEY (`appointment_step_id`) REFERENCES `appointment_steps` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_file` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+CREATE INDEX `guid_index` ON `files` (`guid`) USING BTREE;

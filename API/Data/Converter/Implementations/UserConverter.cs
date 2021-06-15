@@ -9,6 +9,13 @@ namespace API.Data.Converter.Implementations
 {
     public class UserConverter : IParser<User, UserShortVO>
     {
+        private FileConverter FileConverter { get; set; }
+
+        public UserConverter(FileConverter fileConverter)
+        {
+            FileConverter = fileConverter;
+        }
+
         public UserShortVO Parse(User origin)
         {
             if (origin == null) return null;
@@ -17,7 +24,8 @@ namespace API.Data.Converter.Implementations
                 Id = origin.Id,
                 IsConsultant = origin.IsConsultant(),
                 Name = origin.Name,
-                Email = origin.Email
+                Email = origin.Email,
+                ProfilePicUrl = origin.ProfilePictureNavigation != null ? FileConverter.Parse(origin.ProfilePictureNavigation).Url : ""
             };
         }
 

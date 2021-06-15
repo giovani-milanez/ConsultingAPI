@@ -26,6 +26,7 @@ using Database.Model.Context;
 using API.Hypermedia.Enricher;
 using API.Middleware;
 using API.Extension;
+using API.Data.Converter.Implementations;
 
 namespace API
 {
@@ -169,6 +170,15 @@ namespace API
             });
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton(x =>
+            {
+                var context = x.GetService<IHttpContextAccessor>();
+                var url = context.HttpContext.Request.IsHttps ? "https://" : "http://";
+                url += context.HttpContext.Request.Host;
+                url += "/api/v1.0/file";
+
+                return new FileConverter(url);
+             });
             // add current logged in user
             services.AddScoped(x => x.GetService<IHttpContextAccessor>().HttpContext.GetLoggedInUser());
 

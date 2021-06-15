@@ -10,9 +10,9 @@ namespace API.Data.Converter.Implementations
 {
     public class FileConverter : IParser<File, FileDetailVO>
     {
-        private HostString _baseUrl { get; set; }
+        private string _baseUrl { get; set; }
 
-        public FileConverter(HostString baseUrl)
+        public FileConverter(string baseUrl)
         {
             _baseUrl = baseUrl;
         }
@@ -27,7 +27,7 @@ namespace API.Data.Converter.Implementations
                 Name = origin.Name,
                 Size = origin.Size,
                 Type = origin.Type,
-                Url = System.IO.Path.Combine(_baseUrl + "/api/v1.0/file/downloadFile/" + guid)
+                Url = System.IO.Path.Combine(_baseUrl + "/" + guid)
         };
         }
 
