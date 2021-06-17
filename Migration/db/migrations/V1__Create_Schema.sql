@@ -11,7 +11,7 @@ CREATE TABLE `users` (
   `is_email_confirmed` boolean NOT NULL,
   `email_confirmation_code` binary(16),
   `created_at` datetime NOT NULL,
-  `rate_mean_stars` int NOT NULL DEFAULT 0,
+  `rate_mean_stars` float NOT NULL DEFAULT 0,
   `rate_count` bigint NOT NULL DEFAULT 0
 );
 
@@ -66,7 +66,8 @@ CREATE TABLE `ratings` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `appointment_id` bigint NOT NULL,
   `stars` int NOT NULL,
-  `comment` varchar(255)
+  `comment` varchar(255),
+  `created_at` datetime NOT NULL
 );
 
 CREATE TABLE `file_content` (

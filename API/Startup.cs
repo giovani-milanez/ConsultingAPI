@@ -187,6 +187,7 @@ namespace API
             services.AddScoped<IStepBusiness, StepBusinessImplementation>();
             services.AddScoped<IServiceBusiness, ServiceBusinessImplementation>();
             services.AddScoped<IAppointmentBusiness, AppointmentBusinessImplementation>();
+            services.AddScoped<IRatingBusiness, RatingBusinessImplementation>();
 
             services.AddTransient<ITokenService, TokenService>();
 
@@ -195,6 +196,7 @@ namespace API
             services.AddScoped<IServiceRepository, ServiceRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<IFileRepository, FileRepository>();
+            services.AddScoped<IRatingRepository, RatingRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }
 

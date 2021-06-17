@@ -16,15 +16,13 @@ namespace API.Business.Implementations
     {
         private readonly User _requester;
         private readonly IServiceRepository _repository;
-        private readonly IFileRepository _fileRepository;
         private readonly IStepBusiness _step;
         private readonly ServiceConverter _converter;
 
-        public ServiceBusinessImplementation(User requester, IServiceRepository repository, IFileRepository fileRepository, IStepBusiness step, FileConverter fileConverter)
+        public ServiceBusinessImplementation(User requester, IServiceRepository repository, IStepBusiness step, FileConverter fileConverter)
         {
             _requester = requester;
             _repository = repository;
-            _fileRepository = fileRepository;
             _step = step;
             _converter = new ServiceConverter(fileConverter);
         }

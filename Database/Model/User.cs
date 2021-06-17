@@ -54,7 +54,7 @@ namespace Database.Model
         [Column("created_at", TypeName = "datetime")]
         public DateTime CreatedAt { get; set; }
         [Column("rate_mean_stars")]
-        public int RateMeanStars { get; set; }
+        public float RateMeanStars { get; set; }
         [Column("rate_count")]
         public long RateCount { get; set; }
 

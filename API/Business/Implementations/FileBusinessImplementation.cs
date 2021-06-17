@@ -120,6 +120,11 @@ namespace API.Business.Implementations
                 throw new APIException("The step does not allow file upload");
             }
 
+            if (step.Step.TargetUser != _requester.Type)
+            {
+                throw new APIException($"Only the {step.Step.TargetUser} can upload files to this step");
+            }
+
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
