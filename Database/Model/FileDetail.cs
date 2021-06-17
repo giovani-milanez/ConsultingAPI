@@ -9,16 +9,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Model
 {
-    [Table("files")]
+    [Table("file_details")]
+    [Index(nameof(ContentId), Name = "files_details_content")]
     [Index(nameof(UploaderId), Name = "files_user")]
-    public partial class File : BaseEntity
+    [Index(nameof(Guid), Name = "guid_index")]
+    public partial class FileDetail : BaseEntity
     {
-        public File()
+        public FileDetail()
         {
             AppointmentStepFiles = new HashSet<AppointmentStepFile>();
             Users = new HashSet<User>();
         }
 
+        [Column("content_id")]
+        public long ContentId { get; set; }
         [Required]
         [Column("guid")]
         [MaxLength(16)]
@@ -33,18 +37,18 @@ namespace Database.Model
         public string Type { get; set; }
         [Column("size")]
         public long Size { get; set; }
-        [Required]
-        [Column("content", TypeName = "blob")]
-        public byte[] Content { get; set; }
         [Column("uploader_id")]
         public long UploaderId { get; set; }
 
+        [ForeignKey(nameof(ContentId))]
+        [InverseProperty(nameof(FileContent.FileDetails))]
+        public virtual FileContent Content { get; set; }
         [ForeignKey(nameof(UploaderId))]
-        [InverseProperty(nameof(User.Files))]
+        [InverseProperty(nameof(User.FileDetails))]
         public virtual User Uploader { get; set; }
         [InverseProperty(nameof(AppointmentStepFile.File))]
         public virtual ICollection<AppointmentStepFile> AppointmentStepFiles { get; set; }
-        [InverseProperty(nameof(User.ProfilePictureNavigation))]
+        [InverseProperty(nameof(User.ProfilePicture))]
         public virtual ICollection<User> Users { get; set; }
     }
 }

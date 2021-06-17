@@ -21,7 +21,8 @@ namespace Database.Model.Context
         public virtual DbSet<Appointment> Appointments { get; set; }
         public virtual DbSet<AppointmentStep> AppointmentSteps { get; set; }
         public virtual DbSet<AppointmentStepFile> AppointmentStepFiles { get; set; }
-        public virtual DbSet<File> Files { get; set; }
+        public virtual DbSet<FileContent> FileContents { get; set; }
+        public virtual DbSet<FileDetail> FileDetails { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
         public virtual DbSet<Service> Services { get; set; }
         public virtual DbSet<ServicesStep> ServicesSteps { get; set; }
@@ -85,12 +86,22 @@ namespace Database.Model.Context
                     .HasConstraintName("appointment_step_files_file");
             });
 
-            modelBuilder.Entity<File>(entity =>
+            modelBuilder.Entity<FileContent>(entity =>
+            {
+                entity.Property(e => e.FileGuid).IsFixedLength(true);
+            });
+
+            modelBuilder.Entity<FileDetail>(entity =>
             {
                 entity.Property(e => e.Guid).IsFixedLength(true);
 
+                entity.HasOne(d => d.Content)
+                    .WithMany(p => p.FileDetails)
+                    .HasForeignKey(d => d.ContentId)
+                    .HasConstraintName("files_details_content");
+
                 entity.HasOne(d => d.Uploader)
-                    .WithMany(p => p.Files)
+                    .WithMany(p => p.FileDetails)
                     .HasForeignKey(d => d.UploaderId)
                     .HasConstraintName("files_user");
             });
@@ -141,10 +152,10 @@ namespace Database.Model.Context
             {
                 entity.Property(e => e.EmailConfirmationCode).IsFixedLength(true);
 
-                entity.HasOne(d => d.ProfilePictureNavigation)
+                entity.HasOne(d => d.ProfilePicture)
                     .WithMany(p => p.Users)
-                    .HasForeignKey(d => d.ProfilePicture)
-                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasForeignKey(d => d.ProfilePictureId)
+                    .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("user_profile_picture");
             });
 

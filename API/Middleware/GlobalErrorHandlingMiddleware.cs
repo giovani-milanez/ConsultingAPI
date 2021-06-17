@@ -28,7 +28,7 @@ namespace API.Middleware
                 response.ContentType = "application/json";
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-                var errorResponse = new ErrorResponse(ex.Message, response.StatusCode);
+                var errorResponse = new ErrorResponse($"{ex.Message}: {ex.InnerException?.Message}", response.StatusCode);
                 var errorJson = JsonSerializer.Serialize(errorResponse,
                     new JsonSerializerOptions
                     {

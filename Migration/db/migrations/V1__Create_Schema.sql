@@ -7,10 +7,12 @@ CREATE TABLE `users` (
   `cpf_cnpj` varchar(255),
   `short_description` varchar(255),
   `long_description` varchar(255),
-  `profile_picture` bigint,
+  `profile_picture_id` bigint,
   `is_email_confirmed` boolean NOT NULL,
   `email_confirmation_code` binary(16),
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `rate_mean_stars` int NOT NULL DEFAULT 0,
+  `rate_count` bigint NOT NULL DEFAULT 0
 );
 
 CREATE TABLE `steps` (
@@ -67,13 +69,19 @@ CREATE TABLE `ratings` (
   `comment` varchar(255)
 );
 
-CREATE TABLE `files` (
+CREATE TABLE `file_content` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `file_guid` binary(16) UNIQUE NOT NULL,
+  `content` mediumblob NOT NULL
+);
+
+CREATE TABLE `file_details` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `content_id` bigint NOT NULL,
   `guid` binary(16) NOT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `size` bigint NOT NULL,
-  `content` mediumblob NOT NULL,
   `uploader_id` bigint NOT NULL
 );
 
@@ -83,7 +91,7 @@ CREATE TABLE `appointment_step_files` (
   `file_id` bigint NOT NULL
 );
 
-ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture`) REFERENCES `files` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture_id`) REFERENCES `file_details` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 ALTER TABLE `steps` ADD CONSTRAINT `steps_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
@@ -103,10 +111,12 @@ ALTER TABLE `appointment_steps` ADD CONSTRAINT `appointment_steps_steps` FOREIGN
 
 ALTER TABLE `ratings` ADD CONSTRAINT `ratings_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
-ALTER TABLE `files` ADD CONSTRAINT `files_user` FOREIGN KEY (`uploader_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE `file_details` ADD CONSTRAINT `files_details_content` FOREIGN KEY (`content_id`) REFERENCES `file_content` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE `file_details` ADD CONSTRAINT `files_user` FOREIGN KEY (`uploader_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_appointment` FOREIGN KEY (`appointment_step_id`) REFERENCES `appointment_steps` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
-ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_file` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE `appointment_step_files` ADD CONSTRAINT `appointment_step_files_file` FOREIGN KEY (`file_id`) REFERENCES `file_details` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
-CREATE INDEX `guid_index` ON `files` (`guid`) USING BTREE;
+CREATE INDEX `guid_index` ON `file_details` (`guid`) USING BTREE;

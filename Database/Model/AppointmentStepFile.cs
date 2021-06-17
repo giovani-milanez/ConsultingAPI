@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Model.Base;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +13,7 @@ namespace Database.Model
     [Index(nameof(AppointmentStepId), Name = "appointment_step_files_appointment")]
     [Index(nameof(FileId), Name = "appointment_step_files_file")]
     public partial class AppointmentStepFile : BaseEntity
-    {       
+    {
         [Column("appointment_step_id")]
         public long AppointmentStepId { get; set; }
         [Column("file_id")]
@@ -21,7 +23,7 @@ namespace Database.Model
         [InverseProperty("AppointmentStepFiles")]
         public virtual AppointmentStep AppointmentStep { get; set; }
         [ForeignKey(nameof(FileId))]
-        [InverseProperty("AppointmentStepFiles")]
-        public virtual File File { get; set; }
+        [InverseProperty(nameof(FileDetail.AppointmentStepFiles))]
+        public virtual FileDetail File { get; set; }
     }
 }

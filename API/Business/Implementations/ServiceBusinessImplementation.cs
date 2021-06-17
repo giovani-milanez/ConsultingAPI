@@ -157,7 +157,7 @@ namespace API.Business.Implementations
             var entity = await _repository.FindByIdAsync(id,
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    $"{nameof(Service.User)}"
+                    $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}"
                 );
             
             if (entity == null)
@@ -170,11 +170,11 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User is not allowed to view this service");
             }
 
-            // fill in pic url
-            if (entity.User.ProfilePicture.HasValue)
-            {
-                entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
-            }
+            //// fill in pic url
+            //if (entity.User.ProfilePicture.HasValue)
+            //{
+            //    entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
+            //}
 
             return _converter.Parse(entity);
         }
@@ -184,16 +184,16 @@ namespace API.Business.Implementations
             var all = await _repository.FindAllAsync(_requester,
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    $"{nameof(Service.User)}"
+                    $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}"
                 );
-            foreach (var entity in all)
-            {
-                // fill in pic url
-                if (entity.User.ProfilePicture.HasValue)
-                {
-                    entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
-                }
-            }
+            //foreach (var entity in all)
+            //{
+            //    // fill in pic url
+            //    if (entity.User.ProfilePicture.HasValue)
+            //    {
+            //        entity.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(entity.User.ProfilePicture.Value);
+            //    }
+            //}
             return _converter.Parse(all);
         }
 

@@ -109,7 +109,7 @@ namespace API.Controllers
         {
             try
             {                
-                var file = await _fileBusiness.GetFileByGuidAsync(fileGuid);
+                var file = await _fileBusiness.GetFileContentByGuidAsync(fileGuid);
                 if (file == null)
                 {
                     var result = new ContentResult();
@@ -117,7 +117,7 @@ namespace API.Controllers
                     return result;
                 }
                 var contentType = $"application/{Path.GetExtension(file.Type).Replace(".", "")}";
-                return File(file.Content, contentType, file.Name);
+                return File(file.Content.Content, contentType, file.Name);
             }
             catch (Exception ex)
             {

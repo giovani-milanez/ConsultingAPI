@@ -191,25 +191,25 @@ namespace API.Business.Implementations
         public async Task<List<AppointmentVO>> FindAllAsync()
         {
             var all = await _repository.FindAllAsync(_requester,
-                    $"{nameof(Appointment.Service)}.{nameof(Service.User)}",
+                    $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}",
-                    $"{nameof(Appointment.Client)}"
+                    $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
+                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}"
                 );
-            foreach (var item in all)
-            {
-                await this.AddFilesAsync(item);
-            }
+            //foreach (var item in all)
+            //{
+            //    await this.AddFilesAsync(item);
+            //}
             return _converter.Parse(all);
         }
 
         public async Task<AppointmentVO> FindByIdAsync(long id)
         {
             var entity = await _repository.FindByIdAsync(id,
-                    $"{nameof(Appointment.Service)}.{nameof(Service.User)}",
+                    $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
-                    $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}",
-                    $"{nameof(Appointment.Client)}"
+                    $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
+                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}"
                 );
 
             if (entity == null)
@@ -221,7 +221,7 @@ namespace API.Business.Implementations
             {
                 throw new UnauthorizedException("User is not allowed to view this appointment");
             }
-            await this.AddFilesAsync(entity);
+            //await this.AddFilesAsync(entity);
             return _converter.Parse(entity);
         }
 
@@ -238,23 +238,23 @@ namespace API.Business.Implementations
             };
         }
 
-        private async Task AddFilesAsync(Appointment appointment)
-        {
-            if (appointment.Service.User.ProfilePicture.HasValue)
-            {
-                appointment.Service.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Service.User.ProfilePicture.Value);
-            }
-            if (appointment.Client.ProfilePicture.HasValue)
-            {
-                appointment.Client.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Client.ProfilePicture.Value);
-            }
-            foreach (var step in appointment.AppointmentSteps)
-            {
-                foreach (var file in step.AppointmentStepFiles)
-                {
-                    file.File = await _fileRepository.GetFileDetailsByIdAsync(file.FileId);
-                }
-            }
-        }
+        //private async Task AddFilesAsync(Appointment appointment)
+        //{
+        //    if (appointment.Service.User.ProfilePicture.HasValue)
+        //    {
+        //        appointment.Service.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Service.User.ProfilePicture.Value);
+        //    }
+        //    if (appointment.Client.ProfilePicture.HasValue)
+        //    {
+        //        appointment.Client.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Client.ProfilePicture.Value);
+        //    }
+        //    foreach (var step in appointment.AppointmentSteps)
+        //    {
+        //        foreach (var file in step.AppointmentStepFiles)
+        //        {
+        //            file.File = await _fileRepository.GetFileDetailsByIdAsync(file.FileId);
+        //        }
+        //    }
+        //}
     }
 }

@@ -25,7 +25,7 @@ namespace API.Data.Converter.Implementations
                 IsConsultant = origin.IsConsultant(),
                 Name = origin.Name,
                 Email = origin.Email,
-                ProfilePicUrl = origin.ProfilePictureNavigation != null ? FileConverter.Parse(origin.ProfilePictureNavigation).Url : ""
+                ProfilePicUrl = origin.ProfilePicture != null ? FileConverter.Parse(origin.ProfilePicture).Url : ""
             };
         }
 

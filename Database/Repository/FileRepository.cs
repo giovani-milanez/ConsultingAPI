@@ -7,68 +7,56 @@ using System.Threading.Tasks;
 
 namespace Database.Repository
 {
-    public class FileRepository : GenericRepository<File>, IFileRepository
+    public class FileRepository : GenericRepository<FileDetail>, IFileRepository
     {
         public FileRepository(DatabaseContext context) : base(context)
         {
         }
 
-        public Task<File> GetFileDetailsByIdAsync(long fileId)
-        {
-            // all fields BUT content
-            var file = _context.Files
-                .Where(x => x.Id == fileId)
-                .Select(x => new File { Id = x.Id, Guid = x.Guid, Name = x.Name, Type = x.Type, Size = x.Size, UploaderId = x.UploaderId })
-                .FirstOrDefault();
-            return Task.FromResult(file);
-        }
-
         public async Task DeleteFileByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            var file = _context.Files.Where(x => x.Guid == guidBytes).FirstOrDefault();
+
+            bool deleted = false;
+            // delete details
+            var file = _context.FileDetails.Where(x => x.Guid == guidBytes).FirstOrDefault();
             if (file != null)
             {
-                _context.Files.Remove(file);
-                await _context.SaveChangesAsync();
+                _context.FileDetails.Remove(file);
+                deleted = true;
             }
+
+            // delete content
+            var content = _context.FileContents.Where(x => x.FileGuid == guidBytes).FirstOrDefault();
+            if (content != null)
+            {
+                _context.FileContents.Remove(content);
+                deleted = true;
+            }
+
+            if (deleted) await _context.SaveChangesAsync();
         }
 
         public bool FileExists(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            return _context.Files.Any(x => x.Guid == guidBytes);
+            return _context.FileDetails.Any(x => x.Guid == guidBytes);
         }
 
-        public Task<File> GetFileDetailsByGuidAsync(Guid fileGuid)
+        public Task<FileDetail> GetFileDetailsByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            var file = _context.Files
+            var file = _context.FileDetails
                 .Where(x => x.Guid == guidBytes)
-                .Select(x => new File { Id = x.Id, Guid = x.Guid, Name = x.Name, Type = x.Type, Size = x.Size, UploaderId = x.UploaderId })
                 .FirstOrDefault();
             return Task.FromResult(file);
         }
 
-        public Task<File> GetFileByGuidAsync(Guid fileGuid)
+        public Task<FileDetail> GetFileWithContentByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            var file = _context.Files.Where(x => x.Guid == guidBytes).FirstOrDefault();
+            var file = _context.FileDetails.IncludeMultiple(nameof(FileDetail.Content)).Where(x => x.Guid == guidBytes).FirstOrDefault();
             return Task.FromResult(file);
         }
-
-        //public async Task<File> SaveFileAsync(File file, User requester)
-        //{
-        //    await base.CreateAsync(file);
-
-        //    var user = _context.Users.Where(x => x.Id == requester.Id).FirstOrDefault();
-        //    if (user != null)
-        //    {
-        //        user.ProfilePicture = file.Id;
-        //        await _context.SaveChangesAsync();
-        //    }
-
-        //    return file;
-        //}
     }
 }

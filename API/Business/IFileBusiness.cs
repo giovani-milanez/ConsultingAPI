@@ -9,7 +9,7 @@ namespace API.Business
 {
     public interface IFileBusiness
     {
-        Task<File> GetFileByGuidAsync(Guid fileGuid);
+        Task<FileDetail> GetFileContentByGuidAsync(Guid fileGuid);
         Task<FileDetailVO> SaveProfilePicAsync(IFormFile file);
         Task<List<FileDetailVO>> SaveStepFilesAsync(IList<IFormFile> files, long appointmentId, long stepId);
         Task<FileDetailVO> SaveStepFileAsync(IFormFile file, long appointmentId, long stepId);

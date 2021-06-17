@@ -33,7 +33,7 @@ namespace API.Extension
             else
             {
                 @this.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                return @this.StatusCode(@this.Response.StatusCode, new ErrorResponse(ex.Message, @this.Response.StatusCode));
+                return @this.StatusCode(@this.Response.StatusCode, new ErrorResponse($"{ex.Message}: {ex.InnerException?.Message}", @this.Response.StatusCode));
             }
         }
         public static IActionResult ApiBadRequest(this ControllerBase @this, string message = "Error ao processar sua requisição")

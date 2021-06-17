@@ -42,9 +42,9 @@ namespace API.Business.Implementations
             _converter = new FileConverter(url);
         }
 
-        public Task<Database.Model.File> GetFileByGuidAsync(Guid fileGuid)
+        public Task<FileDetail> GetFileContentByGuidAsync(Guid fileGuid)
         {
-            return _fileRepository.GetFileByGuidAsync(fileGuid);
+            return _fileRepository.GetFileWithContentByGuidAsync(fileGuid);
         }
 
         public async Task<FileDetailVO> SaveProfilePicAsync(IFormFile formFile)
@@ -63,21 +63,23 @@ namespace API.Business.Implementations
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
-                file.Content = ms.ToArray();
+                file.Content.Content = ms.ToArray();
             }
             file = await _fileRepository.CreateAsync(file);
 
 
             // update users profile pic
             var user = await _userRepository.FindByIdAsync(_requester.Id);
-            var previousPic = user.ProfilePicture;
-            user.ProfilePicture = file.Id;
+            var previousPic = user.ProfilePictureId;
+            user.ProfilePictureId = file.Id;
             await _userRepository.UpdateAsync(user);
             
             // remove old profile pic
             if (previousPic.HasValue)
             {
-                await _fileRepository.DeleteAsync(previousPic.Value);
+                var fileDetail = await _fileRepository.FindByIdAsync(previousPic.Value);
+                if (fileDetail != null)
+                    await _fileRepository.DeleteFileByGuidAsync(new Guid(fileDetail.Guid));
             }
 
             return _converter.Parse(file);
@@ -121,7 +123,7 @@ namespace API.Business.Implementations
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
-                file.Content = ms.ToArray();
+                file.Content.Content = ms.ToArray();
             }
             file = await _fileRepository.CreateAsync(file);
 
@@ -154,17 +156,19 @@ namespace API.Business.Implementations
             await _fileRepository.DeleteFileByGuidAsync(fileGuid);
         }
 
-        private Database.Model.File GetFileFromForm(IFormFile form)
+        private FileDetail GetFileFromForm(IFormFile form)
         {
             var fileType = Path.GetExtension(form.FileName);
             var docName = Path.GetFileName(form.FileName);
-            Database.Model.File file = new Database.Model.File
+            var guid = Guid.NewGuid().ToByteArray();
+            FileDetail file = new FileDetail
             {
-                Guid = Guid.NewGuid().ToByteArray(),
+                Guid = guid,
                 Name = docName,
                 Type = fileType,
                 Size = form.Length,
-                UploaderId = _requester.Id
+                UploaderId = _requester.Id,
+                Content = new FileContent { FileGuid = guid }
             };
             return file;
         }

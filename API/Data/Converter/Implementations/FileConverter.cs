@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace API.Data.Converter.Implementations
 {
-    public class FileConverter : IParser<File, FileDetailVO>
+    public class FileConverter : IParser<FileDetail, FileDetailVO>
     {
         private string _baseUrl { get; set; }
 
@@ -17,7 +17,7 @@ namespace API.Data.Converter.Implementations
             _baseUrl = baseUrl;
         }
 
-        public FileDetailVO Parse(File origin)
+        public FileDetailVO Parse(FileDetail origin)
         {
             if (origin == null) return null;
             var guid = new Guid(origin.Guid);
@@ -31,7 +31,7 @@ namespace API.Data.Converter.Implementations
         };
         }
 
-        public List<FileDetailVO> Parse(List<File> origin)
+        public List<FileDetailVO> Parse(List<FileDetail> origin)
         {
             if (origin == null) return null;
             return origin.Select(item => Parse(item)).ToList();
