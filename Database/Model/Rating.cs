@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Model
 {
     [Table("ratings")]
-    [Index(nameof(AppointmentId), Name = "ratings_appointment")]
+    [Index(nameof(AppointmentId), Name = "appointment_id", IsUnique = true)]
     public partial class Rating : BaseEntity
-    {
+    {        
         [Column("appointment_id")]
         public long AppointmentId { get; set; }
         [Column("stars")]
@@ -23,7 +23,7 @@ namespace Database.Model
         public DateTime CreatedAt { get; set; }
 
         [ForeignKey(nameof(AppointmentId))]
-        [InverseProperty("Ratings")]
+        [InverseProperty("Rating")]
         public virtual Appointment Appointment { get; set; }
     }
 }

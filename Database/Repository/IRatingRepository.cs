@@ -9,6 +9,7 @@ namespace Database.Repository
         Task<bool> ExistsByAppointmentIdAsync(long appointmentId);
         Task<Rating> AddAndUpdateConsultantRatingAsync(Rating item, long consultantId);
         Task<Rating> EditAndUpdateConsultantRatingAsync(Rating item, long consultantId, int previousStar);
+        Task DeleteAndUpdateConsultantRatingAsync(Rating item, long consultantId, int previousStar);
         Task<List<Rating>> FindAllByConsultantIdAsync(long consultantId, params string[] includes);
 
     }

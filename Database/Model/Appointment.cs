@@ -16,9 +16,8 @@ namespace Database.Model
         public Appointment()
         {
             AppointmentSteps = new HashSet<AppointmentStep>();
-            Ratings = new HashSet<Rating>();
         }
-
+       
         [Column("service_id")]
         public long ServiceId { get; set; }
         [Column("client_id")]
@@ -36,9 +35,9 @@ namespace Database.Model
         [ForeignKey(nameof(ServiceId))]
         [InverseProperty("Appointments")]
         public virtual Service Service { get; set; }
+        [InverseProperty("Appointment")]
+        public virtual Rating Rating { get; set; }
         [InverseProperty(nameof(AppointmentStep.Appointment))]
         public virtual ICollection<AppointmentStep> AppointmentSteps { get; set; }
-        [InverseProperty(nameof(Rating.Appointment))]
-        public virtual ICollection<Rating> Ratings { get; set; }
     }
 }

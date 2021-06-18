@@ -12,12 +12,14 @@ namespace API.Data.Converter.Implementations
         private readonly AppointmentStepConverter AppointmentStepConverter;
         private readonly ServiceConverter ServiceConverter;
         private readonly UserConverter UserConverter;
+        private readonly RatingShortConverter RatingConverter;
 
         public AppointmentConverter(FileConverter fileConverter)
         {
             AppointmentStepConverter = new AppointmentStepConverter(fileConverter);
             ServiceConverter = new ServiceConverter(fileConverter);
             UserConverter = new UserConverter(fileConverter);
+            RatingConverter = new RatingShortConverter();
         }
 
         public Appointment Parse(AppointmentCreateVO origin)
@@ -43,7 +45,8 @@ namespace API.Data.Converter.Implementations
                 StartDate = origin.StartDate,
                 EndDate = origin.EndDate,
                 IsCompleted = origin.IsCompleted,
-                Steps = AppointmentStepConverter.Parse(origin.AppointmentSteps.ToList())
+                Steps = AppointmentStepConverter.Parse(origin.AppointmentSteps.ToList()),
+                Rating = RatingConverter.Parse(origin.Rating)
             };
         }    
 

@@ -194,7 +194,8 @@ namespace API.Business.Implementations
                     $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
-                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}"
+                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}",
+                    nameof(Appointment.Rating)
                 );
             //foreach (var item in all)
             //{
@@ -209,7 +210,8 @@ namespace API.Business.Implementations
                     $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
-                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}"
+                    $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}",
+                    nameof(Appointment.Rating)
                 );
 
             if (entity == null)

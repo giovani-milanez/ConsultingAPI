@@ -64,7 +64,7 @@ CREATE TABLE `appointment_steps` (
 
 CREATE TABLE `ratings` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
-  `appointment_id` bigint NOT NULL,
+  `appointment_id` bigint UNIQUE NOT NULL,
   `stars` int NOT NULL,
   `comment` varchar(255),
   `created_at` datetime NOT NULL

@@ -109,8 +109,8 @@ namespace Database.Model.Context
             modelBuilder.Entity<Rating>(entity =>
             {
                 entity.HasOne(d => d.Appointment)
-                    .WithMany(p => p.Ratings)
-                    .HasForeignKey(d => d.AppointmentId)
+                    .WithOne(p => p.Rating)
+                    .HasForeignKey<Rating>(d => d.AppointmentId)
                     .HasConstraintName("ratings_appointment");
             });
 

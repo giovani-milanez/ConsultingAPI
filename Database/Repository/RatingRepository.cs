@@ -22,14 +22,14 @@ namespace Database.Repository
 
         public async Task<Rating> AddAndUpdateConsultantRatingAsync(Rating item, long consultantId)
         {
-            // create rating
-            var newItem = await CreateAsync(item);
-
             var consultant = await this._context.Users.Where(x => x.Id == consultantId).SingleOrDefaultAsync();
             if (consultant == null)
             {
                 throw new Exception($"can't find consultant of id {consultantId}");
             }
+
+            // create rating
+            var newItem = await CreateAsync(item);
 
             // update consultant's rating mean
             var previousCount = consultant.RateCount;
@@ -43,14 +43,14 @@ namespace Database.Repository
 
         public async Task<Rating> EditAndUpdateConsultantRatingAsync(Rating item, long consultantId, int previousStar)
         {
-            // update rating
-            var newItem = await UpdateAsync(item);
-
             var consultant = await this._context.Users.Where(x => x.Id == consultantId).SingleOrDefaultAsync();
             if (consultant == null)
             {
                 throw new Exception($"can't find consultant of id {consultantId}");
             }
+
+            // update rating
+            var newItem = await UpdateAsync(item);
 
             // update consultant's rating mean
             var newMean =
@@ -59,6 +59,25 @@ namespace Database.Repository
             await _context.SaveChangesAsync();
 
             return newItem;
+        }
+
+        public async Task DeleteAndUpdateConsultantRatingAsync(Rating item, long consultantId, int previousStar)
+        {
+
+            var consultant = await this._context.Users.Where(x => x.Id == consultantId).SingleOrDefaultAsync();
+            if (consultant == null)
+            {
+                throw new Exception($"can't find consultant of id {consultantId}");
+            }
+            // delete rating
+            await DeleteAsync(item.Id);
+
+            // update consultant's rating mean
+            var newMean = consultant.RateCount <= 1 ? 0 :
+                ((consultant.RateMeanStars * consultant.RateCount) - previousStar) / (consultant.RateCount - 1);
+            consultant.RateMeanStars = newMean;
+            consultant.RateCount--;
+            await _context.SaveChangesAsync();
         }
 
         public Task<List<Rating>> FindAllByConsultantIdAsync(long consultantId, params string[] includes)

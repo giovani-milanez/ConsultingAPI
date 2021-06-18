@@ -15,14 +15,16 @@ namespace API.Business.Implementations
         private readonly User _requester;
         private readonly IRatingRepository _repository;
         private readonly IRepository<Appointment> _appointmentRepository;
+        private readonly IRepository<User> _userRepository;
         private readonly RatingConverter _converter;
 
-        public RatingBusinessImplementation(User requester, IRatingRepository repository, IRepository<Appointment> appointmentRepository)
+        public RatingBusinessImplementation(User requester, IRatingRepository repository, IRepository<Appointment> appointmentRepository, IRepository<User> userRepository, FileConverter fileConverter)
         {
             _requester = requester;
             _repository = repository;
             _appointmentRepository = appointmentRepository;
-            _converter = new RatingConverter();
+            _userRepository = userRepository;
+            _converter = new RatingConverter(fileConverter);
         }
 
         public async Task<RatingVO> CreateAsync(RatingCreateVO vo)
@@ -87,7 +89,9 @@ namespace API.Business.Implementations
        
         public async Task<RatingVO> FindByIdAsync(long id)
         {
-            var rating = await _repository.FindByIdAsync(id);
+            var rating = await _repository.FindByIdAsync(id, 
+                $"{nameof(Rating.Appointment)}.{nameof(Appointment.Service)}",
+                $"{nameof(Rating.Appointment)}.{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}");
             if (rating == null)
             {
                 throw new NotFoundException($"Rating id {id} not found");
@@ -98,8 +102,18 @@ namespace API.Business.Implementations
 
         public async Task<List<RatingVO>> FindAllByConsultantIdAsync(long consultantId)
         {
+            var user = await _userRepository.FindByIdAsync(consultantId);
+            if (user == null)
+            {
+                throw new NotFoundException($"Consultant id {consultantId} not found");
+            }
+            if (!user.IsConsultant())
+            {
+                throw new APIException("Invalid consultantId");
+            }
             var all = await _repository.FindAllByConsultantIdAsync(consultantId,
-                    $"{nameof(Rating.Appointment)}.{nameof(Appointment.Service)}"
+                    $"{nameof(Rating.Appointment)}.{nameof(Appointment.Service)}",
+                    $"{nameof(Rating.Appointment)}.{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}"
                 );
             return _converter.Parse(all);
         }
@@ -111,13 +125,13 @@ namespace API.Business.Implementations
             {
                 throw new NotFoundException($"Can't find rating of id {id}");
             }
-            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId);
+            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId, $"{nameof(Appointment.Service)}");
             if (appointment.ClientId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to delete this rating");
             }
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAndUpdateConsultantRatingAsync(rating, appointment.Service.UserId, rating.Stars);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace API.Controllers
         }
 
         [HttpPost("profilePic")]
-        [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
+        //[RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [Authorize]
         [ProducesResponseType((200), Type = typeof(FileDetailVO))]
         [ProducesResponseType(400)]

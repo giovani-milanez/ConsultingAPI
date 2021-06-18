@@ -9,16 +9,23 @@ namespace API.Data.Converter.Implementations
 {
     public class RatingConverter : IParser<Rating, RatingVO>, IParser<RatingCreateVO, Rating>, IParser<RatingEditVO, Rating>
     {
+        private readonly AppointmentShortConverter appointmentShortConverter;
+
+        public RatingConverter(FileConverter fileConverter)
+        {
+            appointmentShortConverter = new AppointmentShortConverter(fileConverter);
+        }
+
         public RatingVO Parse(Rating origin)
         {
             if (origin == null) return null;
             return new RatingVO
             {
                 Id = origin.Id,
-                AppointmentId = origin.AppointmentId,
                 Stars = origin.Stars,
                 Comment = origin.Comment,
-                CreatedAt = origin.CreatedAt
+                CreatedAt = origin.CreatedAt,
+                Appointment = appointmentShortConverter.Parse(origin.Appointment)
             };
         }
 
@@ -29,7 +36,7 @@ namespace API.Data.Converter.Implementations
             {
                 AppointmentId = origin.AppointmentId,
                 Stars = origin.Stars,
-                Comment = origin.Comment, 
+                Comment = origin.Comment,
                 CreatedAt = DateTime.UtcNow
             };
         }
@@ -63,5 +70,6 @@ namespace API.Data.Converter.Implementations
             if (origin == null) return null;
             return origin.Select(item => Parse(item)).ToList();
         }
+
     }
 }
