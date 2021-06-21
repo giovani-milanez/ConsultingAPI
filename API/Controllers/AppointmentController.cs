@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -54,12 +55,13 @@ namespace API.Controllers
            [FromQuery] string clientName,
            string sortDirection,
            int pageSize,
-           int page
+           int page,
+           CancellationToken cancellationToken
            )
         {
             try
             {
-                return Ok(await _business.FindWithPagedSearchAsync(clientName, sortDirection, pageSize, page));
+                return Ok(await _business.FindWithPagedSearchAsync(clientName, sortDirection, pageSize, page, cancellationToken));
             }
             catch (Exception ex)
             {

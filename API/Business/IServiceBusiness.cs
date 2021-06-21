@@ -1,6 +1,7 @@
 ﻿using API.Data.VO;
 using API.Hypermedia.Utils;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Business
@@ -12,7 +13,7 @@ namespace API.Business
         Task<ServiceVO> FindByIdAsync(long id);
         Task<List<ServiceVO>> FindAllAsync();
         Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(
-            string title, string sortDirection, int pageSize, int page);
+            string title, string sortDirection, int pageSize, int page, CancellationToken cancellationToken);
         Task DeleteAsync(long id);
     }
 }

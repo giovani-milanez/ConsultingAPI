@@ -6,9 +6,11 @@ using Database.Enum;
 using Database.Extension;
 using Database.Model;
 using Database.Repository;
+using Database.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Business.Implementations
@@ -62,7 +64,7 @@ namespace API.Business.Implementations
             {
                 throw new FieldValidationException("invalid target user", new Data.FieldError(nameof(vo.TargetUser), $"must be equal '{AccountType.CLIENT}' or '{AccountType.CONSULTANT}'"));
             }
-            var step = await _repository.FindByIdAsync(vo.Id);
+            var step = await _repository.FindByIdAsync(vo.Id, true);
             if (step == null)
             {
                 throw new NotFoundException($"Can't find step of id {vo.Id}");
@@ -77,14 +79,14 @@ namespace API.Business.Implementations
             }
 
             var entity = _converter.Parse(vo);
-            entity = await _repository.UpdateAsync(entity);
+            entity = await _repository.UpdateTrackedAsync(step, entity);
             return _converter.Parse(entity);
         }
 
         public async Task DeleteAsync(long id)
         {
             // TODO: BLOCK IF THERE IS ALREADY A SERVICE USING THIS STEP
-            var step = await _repository.FindByIdAsync(id);
+            var step = await _repository.FindByIdAsync(id, true);
             if (step == null)
             {
                 throw new NotFoundException($"Can't find step of id {id}");
@@ -98,7 +100,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User is not allowed to delete this step");
             }
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteTrackedAsync(step);
         }
 
         public async Task<List<StepVO>> FindAllAsync()
@@ -108,7 +110,7 @@ namespace API.Business.Implementations
 
         public async Task<StepVO> FindByIdAsync(long id)
         {
-            var step = await _repository.FindByIdAsync(id);
+            var step = await _repository.FindByIdAsync(id, false);
             if (step == null)
             {
                 throw new NotFoundException($"Step id {id} not found");
@@ -128,15 +130,14 @@ namespace API.Business.Implementations
             throw new NotImplementedException();
         }
 
-        public async Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(string type, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(PagedRequest paging, CancellationToken cancellationToken)
         {
-            var result = await _repository.FindWithPagedSearchAsync(type,  _requester, sortDirection, pageSize, page);
+            var result = await _repository.FindWithPagedSearchAsync( _requester, paging, cancellationToken);
             return new PagedSearchVO<StepVO>
             {
                 CurrentPage = result.CurrentPage,
-                List = _converter.Parse(result.List),
+                List = _converter.Parse(result.Items),
                 PageSize = result.PageSize,
-                SortDirections = result.SortDirections,
                 TotalResults = result.TotalResults
             };
         }

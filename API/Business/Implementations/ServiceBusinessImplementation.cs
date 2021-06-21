@@ -8,6 +8,7 @@ using Database.Model;
 using Database.Repository;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Business.Implementations
@@ -88,7 +89,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User must be consultant to edit a service");
             }
 
-            var found = await _repository.FindByIdAsync(vo.Id);
+            var found = await _repository.FindByIdAsync(vo.Id, false);
 
             if (found == null)
             {
@@ -152,7 +153,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User must be consultant to view a service");
             }
 
-            var entity = await _repository.FindByIdAsync(id,
+            var entity = await _repository.FindByIdAsync(id, false,
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}"
@@ -195,15 +196,14 @@ namespace API.Business.Implementations
             return _converter.Parse(all);
         }
 
-        public async Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(string title, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(string title, string sortDirection, int pageSize, int page, CancellationToken cancellationToken)
         {
-            var result = await _repository.FindWithPagedSearchAsync(title, _requester, sortDirection, pageSize, page);
+            var result = await _repository.FindWithPagedSearchAsync(title, _requester, sortDirection, pageSize, page, cancellationToken);
             return new PagedSearchVO<ServiceVO>
             {
                 CurrentPage = result.CurrentPage,
-                List = _converter.Parse(result.List),
+                List = _converter.Parse(result.Items),
                 PageSize = result.PageSize,
-                SortDirections = result.SortDirections,
                 TotalResults = result.TotalResults
             };
         }
@@ -215,7 +215,7 @@ namespace API.Business.Implementations
             {
                 throw new UnauthorizedException("User must be consultant to delete a service");
             }
-            var entity = await _repository.FindByIdAsync(id);
+            var entity = await _repository.FindByIdAsync(id, true);
 
             if (entity == null)
             {
@@ -227,7 +227,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User is not allowed to delete this service");
             }
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteTrackedAsync(entity);
         }
     }
 }

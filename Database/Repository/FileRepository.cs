@@ -1,6 +1,8 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using Database.Model.Context;
 using Database.Repository.Generic;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,6 +49,7 @@ namespace Database.Repository
         {
             var guidBytes = fileGuid.ToByteArray();
             var file = _context.FileDetails
+                .AsNoTracking()
                 .Where(x => x.Guid == guidBytes)
                 .FirstOrDefault();
             return Task.FromResult(file);
@@ -55,7 +58,7 @@ namespace Database.Repository
         public Task<FileDetail> GetFileWithContentByGuidAsync(Guid fileGuid)
         {
             var guidBytes = fileGuid.ToByteArray();
-            var file = _context.FileDetails.IncludeMultiple(nameof(FileDetail.Content)).Where(x => x.Guid == guidBytes).FirstOrDefault();
+            var file = _context.FileDetails.IncludeMultiple(nameof(FileDetail.Content)).AsNoTracking().Where(x => x.Guid == guidBytes).FirstOrDefault();
             return Task.FromResult(file);
         }
     }

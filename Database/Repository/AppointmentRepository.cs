@@ -4,8 +4,11 @@ using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Database.Repository
@@ -16,14 +19,56 @@ namespace Database.Repository
         {
         }
 
+        public async Task<AppointmentStep> SubmitStep(Appointment appointment, long StepId, JsonDocument SubmitData)
+        {
+            if (appointment == null)
+                throw new Exception("empty appointment");
+
+            var step = appointment.AppointmentSteps.FirstOrDefault(x => x.StepId == StepId);
+            if (step == null)
+                throw new Exception("empty step");
+
+            step.SubmitData = JsonSerializer.Serialize(SubmitData);
+            step.IsCompleted = true;
+            step.DateCompleted = DateTime.UtcNow;
+
+            if (appointment.AppointmentSteps.All(x => x.IsCompleted))
+            {
+                appointment.IsCompleted = true;
+                appointment.EndDate = DateTime.UtcNow;
+            }
+
+            await this._context.SaveChangesAsync();
+
+            return step;
+        }
+
+        public async Task<AppointmentStep> EditStep(Appointment appointment, long StepId, JsonDocument SubmitData)
+        {
+            if (appointment == null)
+                throw new Exception("empty appointment");
+
+            var step = appointment.AppointmentSteps.FirstOrDefault(x => x.StepId == StepId);
+            if (step == null)
+                throw new Exception("empty step");
+
+            step.SubmitData = JsonSerializer.Serialize(SubmitData);
+            step.DateCompleted = DateTime.UtcNow;          
+
+            await this._context.SaveChangesAsync();
+
+            return step;
+        }
+
         public Task<List<Appointment>> FindAllAsync(User requester, params string[] includes)
         {
             if (requester.IsAdmin())
-                return base.FindAllAsync(includes);
+                return base.FindAllAsync(false, includes);
 
             if (requester.IsConsultant())
             {
                 return this._context.Appointments
+                    .AsNoTracking()
                     .IncludeMultiple(includes)
                     .Where(p => p.Service.UserId == requester.Id)
                     .OrderByDescending(x => x.StartDate)
@@ -33,6 +78,7 @@ namespace Database.Repository
             else
             {
                 return this._context.Appointments
+                    .AsNoTracking()
                     .IncludeMultiple(includes)
                     .Where(p => p.ClientId == requester.Id)
                     .OrderByDescending(x => x.StartDate)
@@ -41,65 +87,40 @@ namespace Database.Repository
             }
         }
 
-        public async Task<PagedSearch<Appointment>> FindWithPagedSearchAsync(string clientName, User requester, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearch<Appointment>> FindWithPagedSearchAsync(
+            string clientName, User requester, 
+            string sortDirection, 
+            int pageSize, 
+            int page,
+            CancellationToken cancellationToken,
+            params string[] includes)
         {
-            var sort = (!string.IsNullOrWhiteSpace(sortDirection) && !sortDirection.Equals("desc")) ? "asc" : "desc";
-            var size = (pageSize < 1) ? 10 : pageSize;
-            var offset = page > 0 ? (page - 1) * size : 0;
+            var query = this._context.Appointments
+                .AsNoTracking()
+                .IncludeMultiple(includes);
 
-            var join = "";
-            var filter = " where 1 = 1 ";
-            string query = @"select * from appointments p ";
-            if (!string.IsNullOrWhiteSpace(clientName))
+            if (!requester.IsAdmin())
             {
-                join += " join users u on (u.id = p.client_id) ";
-                filter += $" and u.name like '%{clientName}%' ";
+                if (requester.IsConsultant())
+                {
+                    query = query.Where(p => p.Service.UserId == requester.Id);
+                }
+                else
+                {
+                    query = query.Where(p => p.ClientId == requester.Id);
+                }
             }
-
-            if (requester.IsConsultant())
+            
+            if (!String.IsNullOrWhiteSpace(clientName))
             {
-                join += " join services s on (s.id = p.service_id) ";
-                filter += $" and s.user_id = {requester.Id} ";
-            }
-            else if (!requester.IsAdmin())
-            {
-                filter += $" and p.client_id = {requester.Id} ";
+                query = query.Where(x => x.Client.Name.Contains(clientName));
             }
 
-            query += join;
-            query += filter;
-            query += $" order by p.start_date desc, p.is_completed {sort} limit {size} offset {offset}";
+            query = query.OrderByDescending(x => x.StartDate)
+                .OrderBy(x => x.IsCompleted);
 
-            string countQuery = "select count(*) from appointments p ";
-            var countJoin = "";
-            var countFilter = " where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(clientName))
-            {
-                countJoin += " join users u on (u.id = p.client_id) ";
-                countFilter += $" and u.name like '%{clientName}%' ";
-            }
-            if (requester.IsConsultant())
-            {
-                countJoin += " join services s on (s.id = p.service_id) ";
-                countFilter += $" and s.user_id = {requester.Id} ";
-            }
-            else if (!requester.IsAdmin())
-            {
-                countFilter += $" and p.client_id = {requester.Id} ";
-            }
-            countQuery += countJoin;
-            countQuery += countFilter;
-
-            var items = await base.FindWithPagedSearchAsync(query);
-            int totalResults = await base.GetCountAsync(countQuery);
-            return new PagedSearch<Appointment>
-            {
-                CurrentPage = page,
-                List = items,
-                PageSize = size,
-                SortDirections = sort,
-                TotalResults = totalResults
-            };
+            var item = await query.PaginateAsync(page, pageSize, cancellationToken);
+            return item;
         }
     }
 }

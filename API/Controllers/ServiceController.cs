@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -53,12 +54,13 @@ namespace API.Controllers
            [FromQuery] string title,
            string sortDirection,
            int pageSize,
-           int page
+           int page,
+           CancellationToken cancellationToken
            )
         {
             try
             {
-                return Ok(await _business.FindWithPagedSearchAsync(title, sortDirection, pageSize, page));
+                return Ok(await _business.FindWithPagedSearchAsync(title, sortDirection, pageSize, page, cancellationToken));
             }
             catch (Exception ex)
             {

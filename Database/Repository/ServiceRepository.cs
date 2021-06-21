@@ -4,8 +4,10 @@ using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Database.Repository
@@ -40,48 +42,42 @@ namespace Database.Repository
         public Task<List<Service>> FindAllAsync(User requester, params string[] includes)
         {
             if (requester.IsAdmin())
-                return base.FindAllAsync(includes);
+                return base.FindAllAsync(false, includes);
 
             return this._context.Services
                 .IncludeMultiple(includes)
+                .AsNoTracking()
                 .Where(p => p.UserId == requester.Id)
                 .ToListAsync();
         }
 
-        public async Task<PagedSearch<Service>> FindWithPagedSearchAsync(string title, User requester, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearch<Service>> FindWithPagedSearchAsync(
+            string title, 
+            User requester, 
+            string sortDirection, 
+            int pageSize, 
+            int page,
+            CancellationToken cancellationToken,
+            params string[] includes)
         {
-            var sort = (!string.IsNullOrWhiteSpace(sortDirection) && !sortDirection.Equals("desc")) ? "asc" : "desc";
-            var size = (pageSize < 1) ? 10 : pageSize;
-            var offset = page > 0 ? (page - 1) * size : 0;
+            var query = this._context.Services
+                .AsNoTracking()
+                .IncludeMultiple(includes);
 
-            string query = @"select * from services p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(title))
-            {
-                query += $" and p.title like '%{title}%' ";
-            }
             if (!requester.IsAdmin())
-                query += $" and p.user_id = {requester.Id} ";
-
-            query += $" order by p.title {sort} limit {size} offset {offset}";
-
-            string countQuery = "select count(*) from services p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(title))
             {
-                countQuery += $" and p.title like '%{title}%' ";
+                query = query.Where(p => p.UserId == requester.Id);
             }
-            if (!requester.IsAdmin())
-                countQuery += $" and p.user_id = {requester.Id} ";
 
-            var items = await base.FindWithPagedSearchAsync(query);
-            int totalResults = await base.GetCountAsync(countQuery);
-            return new PagedSearch<Service>
+            if (!String.IsNullOrWhiteSpace(title))
             {
-                CurrentPage = page,
-                List = items,
-                PageSize = size,
-                SortDirections = sort,
-                TotalResults = totalResults
-            };
+                query = query.Where(x => x.Title.Contains(title));
+            }
+
+            query = query.OrderByDescending(x => x.Id);
+
+            var item = await query.PaginateAsync(page, pageSize, cancellationToken);
+            return item;            
         }
     }
 }

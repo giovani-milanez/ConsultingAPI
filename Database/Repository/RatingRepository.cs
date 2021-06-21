@@ -1,4 +1,5 @@
-﻿using Database.Model;
+﻿using Database.Extension;
+using Database.Model;
 using Database.Model.Context;
 using Database.Repository.Generic;
 using Microsoft.EntityFrameworkCore;
@@ -70,7 +71,7 @@ namespace Database.Repository
                 throw new Exception($"can't find consultant of id {consultantId}");
             }
             // delete rating
-            await DeleteAsync(item.Id);
+            await DeleteTrackedAsync(item);
 
             // update consultant's rating mean
             var newMean = consultant.RateCount <= 1 ? 0 :
@@ -84,6 +85,7 @@ namespace Database.Repository
         {
             return this._context.Ratings
                 .IncludeMultiple(includes)
+                .AsNoTracking()
                 .Where(x => x.Appointment.Service.UserId == consultantId)
                 .ToListAsync();
         }

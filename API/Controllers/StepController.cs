@@ -2,11 +2,13 @@
 using API.Data.VO;
 using API.Extension;
 using API.Hypermedia.Filters;
+using Database.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -43,22 +45,35 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("{sortDirection}/{pageSize}/{page}")]
+        [HttpGet("{page}/{pageSize}")]
         [ProducesResponseType((200), Type = typeof(List<StepVO>))]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
         public async Task<IActionResult> Get(
-           [FromQuery] string type,
-           string sortDirection,
+           int page,
            int pageSize,
-           int page
+           [FromQuery] string nameFilter,
+           [FromQuery] string sortField,
+           CancellationToken cancellationToken
            )
         {
             try
             {
-                return Ok(await _business.FindWithPagedSearchAsync(type, sortDirection, pageSize, page));
+                PagedRequest pagedRequest = new PagedRequest(page, pageSize);
+
+                if (!String.IsNullOrEmpty(nameFilter))
+                {
+                    pagedRequest.Filters.Add(new Filter { FieldName = "display_name", Value = nameFilter });
+                }
+                if (!String.IsNullOrEmpty(sortField))
+                {
+                    string order = sortField.EndsWith("_desc") ? "desc" : "asc";
+                    pagedRequest.SortFields.Add(new SortField { FieldName = sortField, SortOrder = order });
+                }
+
+                return Ok(await _business.FindWithPagedSearchAsync(pagedRequest, cancellationToken));
             }
             catch (Exception ex)
             {

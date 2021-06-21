@@ -69,7 +69,7 @@ namespace API.Business.Implementations
 
 
             // update users profile pic
-            var user = await _userRepository.FindByIdAsync(_requester.Id);
+            var user = await _userRepository.FindByIdAsync(_requester.Id, false);
             var previousPic = user.ProfilePictureId;
             user.ProfilePictureId = file.Id;
             await _userRepository.UpdateAsync(user);
@@ -77,7 +77,7 @@ namespace API.Business.Implementations
             // remove old profile pic
             if (previousPic.HasValue)
             {
-                var fileDetail = await _fileRepository.FindByIdAsync(previousPic.Value);
+                var fileDetail = await _fileRepository.FindByIdAsync(previousPic.Value, false);
                 if (fileDetail != null)
                     await _fileRepository.DeleteFileByGuidAsync(new Guid(fileDetail.Guid));
             }
@@ -99,7 +99,7 @@ namespace API.Business.Implementations
                 throw new APIException($"Unsupported document file type {file.Type}");
             }
 
-            var appointment = await _appointmentRepository.FindByIdAsync(appointmentId, 
+            var appointment = await _appointmentRepository.FindByIdAsync(appointmentId, false,
                 $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.Step)}");
 
             if (appointment == null)

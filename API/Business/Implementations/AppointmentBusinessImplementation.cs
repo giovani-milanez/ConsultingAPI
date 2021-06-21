@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Business.Implementations
@@ -47,7 +48,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User must be consultant to create a service");
             }
 
-            var service = await _serviceRepository.FindByIdAsync(vo.ServiceId, nameof(Service.ServicesSteps));
+            var service = await _serviceRepository.FindByIdAsync(vo.ServiceId, false, nameof(Service.ServicesSteps));
 
             if (service == null)
             {
@@ -59,7 +60,7 @@ namespace API.Business.Implementations
                 throw new UnauthorizedException("User is not allowed to create an appointment for this service");
             }
 
-            var client = await _userRepository.FindByIdAsync(vo.ClientId);
+            var client = await _userRepository.FindByIdAsync(vo.ClientId, false);
 
             if (client == null)
             {
@@ -85,7 +86,7 @@ namespace API.Business.Implementations
 
         public async Task<AppointmentStepVO> SubmitStep(AppointmentStepSubmitVO submit)
         {
-            var entity = await _repository.FindByIdAsync(submit.AppointmentId,
+            var entity = await _repository.FindByIdAsync(submit.AppointmentId, true,
                 nameof(Appointment.AppointmentSteps),
                 $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.Step)}");
 
@@ -116,24 +117,13 @@ namespace API.Business.Implementations
             }
 
             // TODO: Check against json-schema
-
-            step.SubmitData = JsonSerializer.Serialize(submit.SubmitData);
-            step.IsCompleted = true;
-            step.DateCompleted = DateTime.UtcNow;
-
-            if (entity.AppointmentSteps.All(x => x.IsCompleted))
-            {
-                entity.IsCompleted = true;
-                entity.EndDate = DateTime.UtcNow;
-            }
-
-            await _repository.UpdateAsync(entity);
+            step = await _repository.SubmitStep(entity, submit.StepId, submit.SubmitData);
             return _stepConverter.Parse(step);
         }
 
         public async Task<AppointmentStepVO> EditStep(AppointmentStepSubmitVO submit)
         {
-            var entity = await _repository.FindByIdAsync(submit.AppointmentId, 
+            var entity = await _repository.FindByIdAsync(submit.AppointmentId, true,
                 nameof(Appointment.AppointmentSteps),
                 $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.Step)}");
 
@@ -165,10 +155,7 @@ namespace API.Business.Implementations
 
             // TODO: Check against json-schema
 
-            step.SubmitData = JsonSerializer.Serialize(submit.SubmitData);
-            step.DateCompleted = DateTime.UtcNow;
-
-            await _repository.UpdateAsync(entity);
+            step = await _repository.EditStep(entity, submit.StepId, submit.SubmitData);
             return _stepConverter.Parse(step);
         }
 
@@ -178,14 +165,14 @@ namespace API.Business.Implementations
             {
                 throw new UnauthorizedException("User must be admin to delete an appointment");
             }
-            var entity = await _repository.FindByIdAsync(id);
+            var entity = await _repository.FindByIdAsync(id, true);
 
             if (entity == null)
             {
                 throw new NotFoundException($"Can't find appointment of id {id}");
             }
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteTrackedAsync(entity);
         }
 
         public async Task<List<AppointmentVO>> FindAllAsync()
@@ -206,7 +193,7 @@ namespace API.Business.Implementations
 
         public async Task<AppointmentVO> FindByIdAsync(long id)
         {
-            var entity = await _repository.FindByIdAsync(id,
+            var entity = await _repository.FindByIdAsync(id, false,
                     $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
                     $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
@@ -227,36 +214,28 @@ namespace API.Business.Implementations
             return _converter.Parse(entity);
         }
 
-        public async Task<PagedSearchVO<AppointmentVO>> FindWithPagedSearchAsync(string clientName, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearchVO<AppointmentVO>> FindWithPagedSearchAsync(string clientName, string sortDirection, int pageSize, int page, CancellationToken cancellationToken)
         {
-            var result = await _repository.FindWithPagedSearchAsync(clientName, _requester, sortDirection, pageSize, page);
+            var result = await _repository.FindWithPagedSearchAsync(
+                clientName, 
+                _requester, 
+                sortDirection, 
+                pageSize, 
+                page, 
+                cancellationToken,
+                $"{nameof(Appointment.Service)}.{nameof(Service.User)}.{nameof(User.ProfilePicture)}",
+                $"{nameof(Appointment.Service)}.{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
+                $"{nameof(Appointment.AppointmentSteps)}.{nameof(AppointmentStep.AppointmentStepFiles)}.{nameof(AppointmentStepFile.File)}",
+                $"{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}",
+                nameof(Appointment.Rating));
+
             return new PagedSearchVO<AppointmentVO>
             {
                 CurrentPage = result.CurrentPage,
-                List = _converter.Parse(result.List),
+                List = _converter.Parse(result.Items),
                 PageSize = result.PageSize,
-                SortDirections = result.SortDirections,
                 TotalResults = result.TotalResults
             };
         }
-
-        //private async Task AddFilesAsync(Appointment appointment)
-        //{
-        //    if (appointment.Service.User.ProfilePicture.HasValue)
-        //    {
-        //        appointment.Service.User.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Service.User.ProfilePicture.Value);
-        //    }
-        //    if (appointment.Client.ProfilePicture.HasValue)
-        //    {
-        //        appointment.Client.ProfilePictureNavigation = await _fileRepository.GetFileDetailsByIdAsync(appointment.Client.ProfilePicture.Value);
-        //    }
-        //    foreach (var step in appointment.AppointmentSteps)
-        //    {
-        //        foreach (var file in step.AppointmentStepFiles)
-        //        {
-        //            file.File = await _fileRepository.GetFileDetailsByIdAsync(file.FileId);
-        //        }
-        //    }
-        //}
     }
 }

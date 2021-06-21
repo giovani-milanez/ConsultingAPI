@@ -4,8 +4,10 @@ using Database.Model.Context;
 using Database.Repository.Generic;
 using Database.Utils;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Database.Repository
@@ -24,7 +26,7 @@ namespace Database.Repository
         public Task<List<Step>> FindAllAsync(User requester, params string[] includes)
         {
             if (requester.IsAdmin())
-                return base.FindAllAsync(includes);
+                return base.FindAllAsync(false, includes);
 
             return this._context.Steps
                 .IncludeMultiple(includes)
@@ -32,39 +34,49 @@ namespace Database.Repository
                 .ToListAsync();
         }
 
-        public async Task<PagedSearch<Step>> FindWithPagedSearchAsync(string type, User requester, string sortDirection, int pageSize, int page)
+        public async Task<PagedSearch<Step>> FindWithPagedSearchAsync(
+            User requester,
+            PagedRequest paging,
+            CancellationToken cancellationToken,
+            params string[] includes)
         {
-            var sort = (!string.IsNullOrWhiteSpace(sortDirection) && !sortDirection.Equals("desc")) ? "asc" : "desc";
-            var size = (pageSize < 1) ? 10 : pageSize;
-            var offset = page > 0 ? (page - 1) * size : 0;
+            var query = this._context.Steps
+                .AsNoTracking()
+                .IncludeMultiple(includes);
 
-            string query = @"select * from steps p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                query += $" and p.type like '%{type}%' ";
-            }
             if (!requester.IsAdmin())
-                query += $" and p.user_id is null or p.user_id = {requester.Id} ";
-
-            query += $" order by p.type {sort} limit {size} offset {offset}";
-
-            string countQuery = "select count(*) from steps p where 1 = 1 ";
-            if (!string.IsNullOrWhiteSpace(type))
             {
-                countQuery += $" and p.type like '%{type}%' ";
+                query = query.Where(p => !p.UserId.HasValue || p.UserId == requester.Id);
             }
-            if (!requester.IsAdmin())
-                countQuery += $" and p.user_id is null or p.user_id = {requester.Id} ";
-            var items = await base.FindWithPagedSearchAsync(query);
-            int totalResults = await base.GetCountAsync(countQuery);
-            return new PagedSearch<Step>
+
+            var nameFilter = paging.Filters.FirstOrDefault(x => x.FieldName == "display_name");
+            if (nameFilter != null)
             {
-                CurrentPage = page,
-                List = items,
-                PageSize = size,
-                SortDirections = sort,
-                TotalResults = totalResults
-            };
+                var type = nameFilter.Value.ToLower();
+                query = query.Where(x => x.Type.ToLower().Contains(type));
+            }
+
+            var sortById = paging.SortFields.FirstOrDefault(x => x.FieldName == "id");
+            if (sortById != null)
+            {
+                bool desc = sortById.SortOrder == "desc";
+                if (desc)
+                    query = query.OrderByDescending(x => x.Id);
+                else
+                    query = query.OrderBy(x => x.Id);
+            }
+            var sortByName = paging.SortFields.FirstOrDefault(x => x.FieldName == "display_name");
+            if (sortByName != null)
+            {
+                bool desc = sortByName.SortOrder == "desc";
+                if (desc)
+                    query = query.OrderByDescending(x => x.DisplayName);
+                else
+                    query = query.OrderBy(x => x.DisplayName);
+            }
+
+            var item = await query.PaginateAsync(paging.Page, paging.PageSize, cancellationToken);
+            return item;           
         }
     }
 }

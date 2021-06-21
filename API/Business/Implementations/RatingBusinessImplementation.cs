@@ -33,7 +33,7 @@ namespace API.Business.Implementations
             {
                 throw new APIException("Stars must be between 1 and 5");
             }
-            var appointment = await _appointmentRepository.FindByIdAsync(vo.AppointmentId, nameof(Appointment.Service));
+            var appointment = await _appointmentRepository.FindByIdAsync(vo.AppointmentId, false, nameof(Appointment.Service));
             if (appointment == null)
             {
                 throw new NotFoundException($"Can't find appointment of id {vo.AppointmentId}");
@@ -62,13 +62,13 @@ namespace API.Business.Implementations
             {
                 throw new APIException("Stars must be between 1 and 5");
             }
-            var rating = await _repository.FindByIdAsync(vo.Id);
+            var rating = await _repository.FindByIdAsync(vo.Id, false);
             if (rating == null)
             {
                 throw new NotFoundException($"Can't find rating of id {vo.Id}");
             }
 
-            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId, nameof(Appointment.Service));
+            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId, false, nameof(Appointment.Service));
             if (appointment == null)
             {
                 throw new NotFoundException($"Can't find appointment of id {rating.AppointmentId}");
@@ -89,7 +89,7 @@ namespace API.Business.Implementations
        
         public async Task<RatingVO> FindByIdAsync(long id)
         {
-            var rating = await _repository.FindByIdAsync(id, 
+            var rating = await _repository.FindByIdAsync(id, false,
                 $"{nameof(Rating.Appointment)}.{nameof(Appointment.Service)}",
                 $"{nameof(Rating.Appointment)}.{nameof(Appointment.Client)}.{nameof(User.ProfilePicture)}");
             if (rating == null)
@@ -102,7 +102,7 @@ namespace API.Business.Implementations
 
         public async Task<List<RatingVO>> FindAllByConsultantIdAsync(long consultantId)
         {
-            var user = await _userRepository.FindByIdAsync(consultantId);
+            var user = await _userRepository.FindByIdAsync(consultantId, false);
             if (user == null)
             {
                 throw new NotFoundException($"Consultant id {consultantId} not found");
@@ -120,12 +120,12 @@ namespace API.Business.Implementations
 
         public async Task DeleteAsync(long id)
         {
-            var rating = await _repository.FindByIdAsync(id);
+            var rating = await _repository.FindByIdAsync(id, true);
             if (rating == null)
             {
                 throw new NotFoundException($"Can't find rating of id {id}");
             }
-            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId, $"{nameof(Appointment.Service)}");
+            var appointment = await _appointmentRepository.FindByIdAsync(rating.AppointmentId, false, $"{nameof(Appointment.Service)}");
             if (appointment.ClientId != _requester.Id)
             {
                 throw new UnauthorizedException("User is not allowed to delete this rating");

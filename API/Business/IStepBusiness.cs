@@ -1,7 +1,9 @@
 ﻿using API.Data.VO;
 using API.Hypermedia.Utils;
 using Database.Model;
+using Database.Utils;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace API.Business
@@ -13,8 +15,7 @@ namespace API.Business
         Task<StepVO> FindByIdAsync(long id);
         Task<List<StepVO>> FindByTypeAsync(string type);
         Task<List<StepVO>> FindAllAsync();
-        Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(
-            string name, string sortDirection, int pageSize, int page);
+        Task<PagedSearchVO<StepVO>> FindWithPagedSearchAsync(PagedRequest paging, CancellationToken cancellationToken);
         Task DeleteAsync(long id);
     }
 }
