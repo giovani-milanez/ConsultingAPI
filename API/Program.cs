@@ -21,6 +21,8 @@ namespace API
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    //webBuilder.UseUrls("http://0.0.0.0:29515");
+                    //webBuilder.UseUrls("https://0.0.0.0:44343");
                 });
     }
 }

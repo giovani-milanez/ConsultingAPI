@@ -34,35 +34,40 @@ namespace Database.Repository
             return _context.Users.SingleOrDefaultAsync(u => (u.Id == id));
         }
 
-        //public async Task<bool> RevokeTokenAsync(string email)
-        //{
-        //    var user = await _context.Users.SingleOrDefaultAsync(u => (u.Email == email));
-        //    if (user == null) return false;
-        //    user.RefreshToken = null;
-        //    _context.SaveChanges();
-        //    return true;
-        //}
+        public async Task<bool> RevokeTokenAsync(string email)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(u => (u.Email == email));
+            if (user == null) return false;
+            user.RefreshToken = null;
+            _context.SaveChanges();
+            return true;
+        }
 
-        //public async Task<User> RefreshUserInfoAsync(User user)
-        //{
-        //    if (!_context.Users.Any(u => u.Id.Equals(user.Id))) return null;
+        public async Task<User> RefreshUserInfoAsync(User user)
+        {
+            if (!_context.Users.Any(u => u.Id.Equals(user.Id))) return null;
 
-        //    var result = await _context.Users.SingleOrDefaultAsync(p => p.Id.Equals(user.Id));
-        //    if (result != null)
-        //    {
-        //        try
-        //        {
-        //            _context.Entry(result).CurrentValues.SetValues(user);
-        //            _context.SaveChanges();
-        //            return result;
-        //        }
-        //        catch (Exception)
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //    return result;
-        //}
+            var result = await _context.Users.SingleOrDefaultAsync(p => p.Id.Equals(user.Id));
+            if (result != null)
+            {
+                try
+                {
+                    _context.Entry(result).CurrentValues.SetValues(user);
+                    _context.SaveChanges();
+                    return result;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+            return result;
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await this._context.Users.AnyAsync(p => p.Email.ToUpper().Equals(email.ToUpper()));
+        }
 
         private string ComputeHash(string input, SHA256CryptoServiceProvider algorithm)
         {

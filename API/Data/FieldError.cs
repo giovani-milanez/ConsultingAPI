@@ -12,7 +12,7 @@ namespace API.Data
             Errors = new List<string>();
         }
 
-        public FieldError(string fieldName, string error)
+        public FieldError(string fieldName, string error) : this()
         {
             FieldName = fieldName;
             this.AddError(error);

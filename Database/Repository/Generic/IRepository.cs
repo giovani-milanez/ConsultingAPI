@@ -11,7 +11,7 @@ namespace Database.Repository
         Task<List<T>> FindAllAsync(bool tracking, params string[] includes);
         Task<T> UpdateAsync(T item);
         Task<T> UpdateTrackedAsync(T trackedItem, T newValues);
-        //Task DeleteAsync(long id);
+        Task DeleteAsync(long id);
         Task DeleteTrackedAsync(T trackedItem);
         Task<bool> ExistsAsync(long id);
         //Task<List<T>> FindWithPagedSearchAsync(string query, params string[] includes);

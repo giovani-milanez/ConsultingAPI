@@ -14,7 +14,7 @@ namespace API.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize]
+    [Authorize("Bearer")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class ServiceController : ControllerBase
     {

@@ -25,7 +25,7 @@ namespace API.Controllers
 
         [HttpPost("profilePic")]
         //[RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
-        [Authorize]
+        [Authorize("Bearer")]
         [ProducesResponseType((200), Type = typeof(FileDetailVO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -44,7 +44,7 @@ namespace API.Controllers
         }       
 
         [HttpPost("appointment/{appointmentId}/step/{stepId}/document")]
-        [Authorize]
+        [Authorize("Bearer")]
         [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [ProducesResponseType((200), Type = typeof(FileDetailVO))]
         [ProducesResponseType(400)]
@@ -63,7 +63,7 @@ namespace API.Controllers
             }
         }
         [HttpPost("appointment/{appointmentId}/step/{stepId}/documents")]
-        [Authorize]
+        [Authorize("Bearer")]
         [RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
         [ProducesResponseType((200), Type = typeof(List<FileDetailVO>))]
         [ProducesResponseType(400)]
@@ -83,7 +83,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{fileGuid}")]
-        [Authorize]
+        [Authorize("Bearer")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]

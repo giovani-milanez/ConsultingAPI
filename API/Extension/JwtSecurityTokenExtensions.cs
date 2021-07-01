@@ -18,7 +18,7 @@ namespace API.Extension
             {
                 switch (claim.Type)
                 {
-                    case "id": user.Id = Convert.ToInt32(claim.Value); break;
+                    case "sub": user.Id = Convert.ToInt32(claim.Value); break;
                     case "name": user.Name = claim.Value; break;
                     case "email": user.Email = claim.Value; break;
                     case "role": user.Type = claim.Value; break;

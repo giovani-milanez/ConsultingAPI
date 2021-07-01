@@ -24,7 +24,6 @@ namespace Database.Model
         [Required]
         [Column("type", TypeName = "enum('client','consultant','admin')")]
         public string Type { get; set; }
-        [Required]
         [Column("name")]
         [StringLength(255)]
         public string Name { get; set; }
@@ -57,6 +56,13 @@ namespace Database.Model
         public float RateMeanStars { get; set; }
         [Column("rate_count")]
         public long RateCount { get; set; }
+        [Column("refresh_token")]
+        public string RefreshToken { get; set; }
+
+        [Column("refresh_token_expiry_time", TypeName = "datetime")]
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+        [Column("login_provider")]
+        public string LoginProvider { get; set; }
 
         [ForeignKey(nameof(ProfilePictureId))]
         [InverseProperty(nameof(FileDetail.Users))]

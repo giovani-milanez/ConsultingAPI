@@ -55,6 +55,7 @@ namespace IdentityServer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    //webBuilder.UseUrls("https://0.0.0.0:5001");
                 });
     }
 }

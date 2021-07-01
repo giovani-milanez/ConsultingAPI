@@ -27,6 +27,9 @@ using API.Hypermedia.Enricher;
 using API.Middleware;
 using API.Extension;
 using API.Data.Converter.Implementations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API
 {
@@ -57,52 +60,67 @@ namespace API
 
             services.AddSingleton(tokenConfigurations);
 
-            services.AddAuthentication("Bearer")
-            .AddJwtBearer("Bearer", options =>
-            {
-                options.Authority = "https://localhost:5001";
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false
-                };
-            });
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("ApiScope", policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", "consultingapi");
-                });
-            });
-
-            //services.AddAuthentication(options =>
+            //services.AddAuthentication("Bearer")
+            //.AddJwtBearer("Bearer", options =>
             //{
-            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //})
-            //.AddJwtBearer(options =>
-            //{
+            //    options.Authority = "https://localhost:5001";
+
             //    options.TokenValidationParameters = new TokenValidationParameters
             //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateLifetime = true,
-            //        ValidateIssuerSigningKey = true,
-            //        ValidIssuer = tokenConfigurations.Issuer,
-            //        ValidAudience = tokenConfigurations.Audience,
-            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
+            //        ValidateAudience = false
             //    };
             //});
 
-            //services.AddAuthorization(auth =>
+            //services.AddAuthorization(options =>
             //{
-            //    auth.AddPolicy("Bearer",
-            //        new AuthorizationPolicyBuilder()
-            //        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-            //        .RequireAuthenticatedUser().Build());
+            //    options.AddPolicy("ApiScope", policy =>
+            //    {
+            //        policy.RequireAuthenticatedUser();
+            //        policy.RequireClaim("scope", "consultingapi");
+            //    });
             //});
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddGoogle("Google", options =>
+                {
+                    options.SignInScheme = "idsrv.external";
+
+                    options.ClientId = Configuration["ExternalAuth:Google:ClientId"];
+                    options.ClientSecret = Configuration["ExternalAuth:Google:ClientSecret"];
+                })
+            .AddFacebook(options =>
+            {
+                options.SignInScheme = "idsrv.external";
+
+                options.AppId = Configuration["ExternalAuth:Facebook:AppId"];
+                options.AppSecret = Configuration["ExternalAuth:Facebook:AppSecret"];
+                // facebookOptions.AccessDeniedPath = "/Account/AccessDenied";
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = tokenConfigurations.Issuer,
+                    ValidAudience = tokenConfigurations.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
+                };
+            });
+
+            services.AddAuthorization(auth =>
+            {
+                auth.AddPolicy("Bearer",
+                    new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser().Build());
+            });
 
             services.AddCors(options => options.AddDefaultPolicy(builder =>
             {
@@ -162,7 +180,7 @@ namespace API
                             Scopes = new Dictionary<string, string>
                             {
                                 {"consultingapi", "Consulting API"}
-                            }                            
+                            }
                         }
                     }
                 });
@@ -182,7 +200,7 @@ namespace API
             // add current logged in user
             services.AddScoped(x => x.GetService<IHttpContextAccessor>().HttpContext.GetLoggedInUser());
 
-            //services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
+            services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
             services.AddScoped<IFileBusiness, FileBusinessImplementation>();
             services.AddScoped<IStepBusiness, StepBusinessImplementation>();
             services.AddScoped<IServiceBusiness, ServiceBusinessImplementation>();
@@ -231,14 +249,14 @@ namespace API
             option.AddRedirect("^$", "swagger");
             app.UseRewriter(option);
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapControllerRoute("DefaultApi", "{controller=values}/{id?}");
-                endpoints.MapControllers().RequireAuthorization("ApiScope");
+                //endpoints.MapControllers().RequireAuthorization("ApiScope");
             });
         }
 

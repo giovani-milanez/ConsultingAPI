@@ -1,7 +1,7 @@
 CREATE TABLE `users` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `type` ENUM ('client', 'consultant', 'admin') NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255),
   `email` varchar(255) NOT NULL,
   `password` varchar(255),
   `cpf_cnpj` varchar(255),
@@ -12,7 +12,10 @@ CREATE TABLE `users` (
   `email_confirmation_code` binary(16),
   `created_at` datetime NOT NULL,
   `rate_mean_stars` float NOT NULL DEFAULT 0,
-  `rate_count` bigint NOT NULL DEFAULT 0
+  `rate_count` bigint NOT NULL DEFAULT 0,
+  `refresh_token` varchar(500),
+  `refresh_token_expiry_time` datetime,
+  `login_provider` varchar(255)
 );
 
 CREATE TABLE `steps` (
