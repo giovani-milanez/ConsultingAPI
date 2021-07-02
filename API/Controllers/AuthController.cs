@@ -50,23 +50,36 @@ namespace API.Controllers
         public async Task<IActionResult> SigninAsync([FromBody] UserLoginVO user)
         {
             if (user == null) return BadRequest("Ivalid client request");
-            var token = await _loginBusiness.ValidateCredentialsAsync(user);
-            if (token == null) return Unauthorized();
-            return Ok(token);
+            try
+            {
+                var token = await _loginBusiness.ValidateCredentialsAsync(user);
+                if (token == null) return Unauthorized();
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
         }
 
         [HttpPost]
         [Route("refresh")]
         [ProducesResponseType((200), Type = typeof(TokenVO))]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> RefreshAsync([FromBody] TokenVO tokenVo)
+        public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenVO tokenVo)
         {
-            if (tokenVo is null) return BadRequest("Ivalid client request");
-            var token = await _loginBusiness.ValidateCredentialsAsync(tokenVo);
-            if (token == null) return BadRequest("Ivalid client request");
-            return Ok(token);
+            if (tokenVo == null) return BadRequest("Ivalid client request");
+            try
+            {
+                var token = await _loginBusiness.ValidateCredentialsAsync(tokenVo);
+                if (token == null) return Unauthorized();
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
         }
-
 
         [HttpGet]
         [Route("revoke")]

@@ -6,7 +6,7 @@ namespace API.Business
     public interface ILoginBusiness
     {
         Task<TokenVO> ValidateCredentialsAsync(UserLoginVO user);
-        Task<TokenVO> ValidateCredentialsAsync(TokenVO token);
+        Task<TokenVO> ValidateCredentialsAsync(RefreshTokenVO token);
         Task<bool> RevokeTokenAsync(string email);
         Task<TokenVO> RegisterUserAsync(UserRegisterVO user);
     }

@@ -40,12 +40,9 @@ namespace API.Business.Implementations
             return await GetTokenFromUserAsync(user);
         }
 
-        public async Task<TokenVO> ValidateCredentialsAsync(TokenVO token)
+        public async Task<TokenVO> ValidateCredentialsAsync(RefreshTokenVO token)
         {
-            var accessToken = token.AccessToken;
-            var refreshToken = token.RefreshToken;
-
-            var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
+            var principal = _tokenService.GetPrincipalFromExpiredToken(token.AccessToken);
 
             var email = principal.FindFirst(ClaimTypes.Email);
             if (email == null)
@@ -54,26 +51,15 @@ namespace API.Business.Implementations
             var user = await _repository.FindByEmailAsync(email.Value);
 
             if (user == null ||
-                user.RefreshToken != refreshToken ||
+                user.RefreshToken != token.RefreshToken ||
                 user.RefreshTokenExpiryTime <= DateTime.Now) return null;
 
-            accessToken = _tokenService.GenerateAccessToken(principal.Claims);
-            refreshToken = _tokenService.GenerateRefreshToken();
+            var newToken = await GetTokenFromUserAsync(user);
+            user.RefreshToken = newToken.RefreshToken;
 
-            user.RefreshToken = refreshToken;
+            await _repository.RefreshUserInfoAsync(user);            
 
-            await _repository.RefreshUserInfoAsync(user);
-
-            DateTime createDate = DateTime.Now;
-            DateTime expirationDate = createDate.AddMinutes(_configuration.Minutes);
-
-            return new TokenVO(
-                true,
-                createDate.ToString(DATE_FORMAT),
-                expirationDate.ToString(DATE_FORMAT),
-                accessToken,
-                refreshToken
-                );
+            return newToken;
         }
         public async Task<bool> RevokeTokenAsync(string email)
         {
