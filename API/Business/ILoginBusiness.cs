@@ -1,4 +1,5 @@
 ﻿using API.Data.VO;
+using API.Data.VO.Token;
 using System.Threading.Tasks;
 
 namespace API.Business
@@ -9,5 +10,7 @@ namespace API.Business
         Task<TokenVO> ValidateCredentialsAsync(RefreshTokenVO token);
         Task<bool> RevokeTokenAsync(string email);
         Task<TokenVO> RegisterUserAsync(UserRegisterVO user);
+        Task<TokenVO> RegisterGoogleUserAsync(GoogleTokenRegisterVO token);
+        Task<TokenVO> RegisterFacebookUserAsync(FacebookTokenRegisterVO token);
     }
 }

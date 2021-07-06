@@ -1,15 +1,20 @@
 ﻿using API.Configurations;
 using API.Data.Converter.Implementations;
 using API.Data.VO;
+using API.Data.VO.Token;
 using API.Exceptions;
 using API.Services;
 using Database.Model;
 using Database.Repository;
+using Google.Apis.Auth;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace API.Business.Implementations
@@ -20,13 +25,15 @@ namespace API.Business.Implementations
         private TokenConfigurations _configuration;
 
         private IUserRepository _repository;
+        private readonly IFileRepository _fileRepository;
         private readonly ITokenService _tokenService;
         private readonly UserConverter _userConverter;
 
-        public LoginBusinessImplementation(TokenConfigurations configuration, IUserRepository repository, ITokenService tokenService, FileConverter fileConverter)
+        public LoginBusinessImplementation(TokenConfigurations configuration, IUserRepository repository, IFileRepository fileRepository, ITokenService tokenService, FileConverter fileConverter)
         {
             _configuration = configuration;
             _repository = repository;
+            _fileRepository = fileRepository;
             _tokenService = tokenService;
             _userConverter = new UserConverter(fileConverter);
         }
@@ -87,7 +94,7 @@ namespace API.Business.Implementations
             bool emailExists = await _repository.EmailExistsAsync(vo.Email);
             if (emailExists)
             {
-                throw new FieldValidationException("email already taken", new Data.FieldError(nameof(vo.Email), "email already taken"));
+                throw new FieldValidationException("Email já cadastrado, use um diferente.", new Data.FieldError(nameof(vo.Email), "email already taken"));
             }
 
             var entity = _userConverter.Parse(vo);
@@ -130,6 +137,130 @@ namespace API.Business.Implementations
                 accessToken,
                 refreshToken
                 );
+        }
+
+        public async Task<TokenVO> RegisterGoogleUserAsync(GoogleTokenRegisterVO tokenVO)
+        {
+            var validPayload = await GoogleJsonWebSignature.ValidateAsync(tokenVO.JwtIdToken);
+            if (validPayload == null || !validPayload.EmailVerified)
+                return null;
+
+            bool emailExists = await _repository.EmailExistsAsync(validPayload.Email);
+            if (emailExists)
+            {
+                throw new FieldValidationException("Email já cadastrado, use um diferente.", new Data.FieldError(nameof(validPayload.Email), "email already taken"));
+            }
+
+            var entity = new User
+            {
+                Name = validPayload.Name,
+                Type = tokenVO.IsConsultant ? "consultant" : "client",
+                Email = validPayload.Email,
+                IsEmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                LoginProvider = "Google"
+            };
+            entity = await _repository.CreateAsync(entity);
+
+            if (!String.IsNullOrWhiteSpace(validPayload.Picture))
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync(validPayload.Picture);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var bytes = await response.Content.ReadAsByteArrayAsync();
+                    var guid = Guid.NewGuid().ToByteArray();
+                    var fileType = response.Content.Headers.ContentType?.MediaType;
+                    fileType = fileType.Replace("image/", ".");
+                    FileDetail file = new FileDetail
+                    {
+                        Guid = guid,
+                        Name = String.Concat(validPayload.Name, fileType),
+                        Type = fileType,
+                        Size = response.Content.Headers.ContentLength.HasValue ? response.Content.Headers.ContentLength.Value : 0,
+                        UploaderId = entity.Id,
+                        Content = new FileContent { FileGuid = guid, Content = bytes }
+                    };
+                    file = await _fileRepository.CreateAsync(file);
+
+                    // update users profile pic
+                    entity.ProfilePictureId = file.Id;
+                    await _repository.UpdateAsync(entity);
+                }
+            }
+
+            return await GetTokenFromUserAsync(entity);
+        }
+
+        public async Task<TokenVO> RegisterFacebookUserAsync(FacebookTokenRegisterVO tokenVo)
+        {
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://graph.facebook.com/");
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            HttpResponseMessage response = await client.GetAsync($"debug_token?input_token={tokenVo.AccessToken}&access_token={tokenVo.AccessToken}");
+            bool isValid = false;
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+                var data = payload.GetProperty("data");
+                isValid = data.GetProperty("is_valid").GetBoolean();
+            }
+
+            if (!isValid) return null;
+
+            response = await client.GetAsync($"me?fields=name,email,id&access_token={tokenVo.AccessToken}");
+            if (!response.IsSuccessStatusCode) return null;
+            var payloadInfo = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+
+            var email = payloadInfo.GetProperty("email").GetString();
+            var name = payloadInfo.GetProperty("name").GetString();
+            var id = payloadInfo.GetProperty("id").GetString();
+
+            bool emailExists = await _repository.EmailExistsAsync(email);
+            if (emailExists)
+            {
+                throw new FieldValidationException("Email já cadastrado, use um diferente.", new Data.FieldError("Email", "email already taken"));
+            }
+
+            var entity = new User
+            {
+                Name = name,
+                Type = tokenVo.IsConsultant ? "consultant" : "client",
+                Email = email,
+                IsEmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                LoginProvider = "Facebook"
+            };
+            entity = await _repository.CreateAsync(entity);
+
+            response = await client.GetAsync($"v11.0/{id}/picture");
+            if (response.IsSuccessStatusCode)
+            {
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                var guid = Guid.NewGuid().ToByteArray();
+                var fileType = response.Content.Headers.ContentType?.MediaType;
+                fileType = fileType.Replace("image/", ".");
+                FileDetail file = new FileDetail
+                {
+                    Guid = guid,
+                    Name = String.Concat(name, fileType),
+                    Type = fileType,
+                    Size = response.Content.Headers.ContentLength.HasValue ? response.Content.Headers.ContentLength.Value : 0,
+                    UploaderId = entity.Id,
+                    Content = new FileContent { FileGuid = guid, Content = bytes }
+                };
+                file = await _fileRepository.CreateAsync(file);
+
+                // update users profile pic
+                entity.ProfilePictureId = file.Id;
+                await _repository.UpdateAsync(entity);
+            }
+
+            return await GetTokenFromUserAsync(entity);
+
         }
     }
 }

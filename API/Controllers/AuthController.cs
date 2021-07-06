@@ -1,11 +1,10 @@
 ﻿using API.Business;
 using API.Data.VO;
+using API.Data.VO.Token;
 using API.Extension;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -36,6 +35,46 @@ namespace API.Controllers
                     return this.ApiNotFoundRequest();
 
                 return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("signup/google")]
+        [ProducesResponseType((200), Type = typeof(TokenVO))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> SignupGoogleAsync([FromBody] GoogleTokenRegisterVO tokenVo)
+        {
+            try
+            {
+                var token = await _loginBusiness.RegisterGoogleUserAsync(tokenVo);
+                if (token == null) return Unauthorized();
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("signup/facebook")]
+        [ProducesResponseType((200), Type = typeof(TokenVO))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> SignupFacebookAsync([FromBody] FacebookTokenRegisterVO tokenVo)
+        {
+            try
+            {
+                var token = await _loginBusiness.RegisterFacebookUserAsync(tokenVo);
+                if (token == null) return Unauthorized();
+
+                return Ok(token);
             }
             catch (Exception ex)
             {

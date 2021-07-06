@@ -231,7 +231,7 @@ namespace API
             }
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
