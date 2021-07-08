@@ -135,7 +135,8 @@ namespace API.Business.Implementations
                 createDate.ToString(DATE_FORMAT),
                 expirationDate.ToString(DATE_FORMAT),
                 accessToken,
-                refreshToken
+                refreshToken,
+                _userConverter.Parse(user)
                 );
         }
 
@@ -186,6 +187,7 @@ namespace API.Business.Implementations
 
                     // update users profile pic
                     entity.ProfilePictureId = file.Id;
+                    entity.ProfilePicture = file;
                     await _repository.UpdateAsync(entity);
                 }
             }
@@ -256,11 +258,58 @@ namespace API.Business.Implementations
 
                 // update users profile pic
                 entity.ProfilePictureId = file.Id;
+                entity.ProfilePicture = file;
                 await _repository.UpdateAsync(entity);
             }
 
             return await GetTokenFromUserAsync(entity);
 
+        }
+
+        public async Task<TokenVO> ValidateGoogleUserAsync(string jwtIdToken)
+        {
+            var validPayload = await GoogleJsonWebSignature.ValidateAsync(jwtIdToken);
+            if (validPayload == null)
+                return null;
+
+            var user = await _repository.FindByEmailAsync(validPayload.Email);
+            if (user == null || user.LoginProvider != "Google")
+            {
+                throw new NotFoundException("Usuário não cadastrado com Google");
+            }
+            return await GetTokenFromUserAsync(user);
+        }
+
+        public async Task<TokenVO> ValidateFacebookUserAsync(string accessToken)
+        {
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://graph.facebook.com/");
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            HttpResponseMessage response = await client.GetAsync($"debug_token?input_token={accessToken}&access_token={accessToken}");
+            bool isValid = false;
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+                var data = payload.GetProperty("data");
+                isValid = data.GetProperty("is_valid").GetBoolean();
+            }
+
+            if (!isValid) return null;
+
+            response = await client.GetAsync($"me?fields=email&access_token={accessToken}");
+            if (!response.IsSuccessStatusCode) return null;
+            var payloadInfo = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+
+            var email = payloadInfo.GetProperty("email").GetString();
+
+            var user = await _repository.FindByEmailAsync(email);
+            if (user == null || user.LoginProvider != "Facebook")
+            {
+                throw new NotFoundException("Usuário não cadastrado com Facebook");
+            }
+            return await GetTokenFromUserAsync(user);
         }
     }
 }

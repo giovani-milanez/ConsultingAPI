@@ -12,5 +12,7 @@ namespace API.Business
         Task<TokenVO> RegisterUserAsync(UserRegisterVO user);
         Task<TokenVO> RegisterGoogleUserAsync(GoogleTokenRegisterVO token);
         Task<TokenVO> RegisterFacebookUserAsync(FacebookTokenRegisterVO token);
+        Task<TokenVO> ValidateGoogleUserAsync(string jwtIdToken);
+        Task<TokenVO> ValidateFacebookUserAsync(string aaccessToken);
     }
 }

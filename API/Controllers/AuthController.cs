@@ -102,6 +102,44 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Route("signin/google")]
+        [ProducesResponseType((200), Type = typeof(TokenVO))]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> SigninGoogleAsync([FromBody] GoogleTokenLoginVO tokenVo)
+        {
+            if (tokenVo == null || String.IsNullOrWhiteSpace(tokenVo.JwtIdToken)) return BadRequest("Ivalid client request");
+            try
+            {
+                var token = await _loginBusiness.ValidateGoogleUserAsync(tokenVo.JwtIdToken);
+                if (token == null) return Unauthorized();
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("signin/facebook")]
+        [ProducesResponseType((200), Type = typeof(TokenVO))]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> SigninFacebookAsync([FromBody] FacebookTokenLoginVO tokenVo)
+        {
+            if (tokenVo == null || String.IsNullOrWhiteSpace(tokenVo.AccessToken)) return BadRequest("Ivalid client request");
+            try
+            {
+                var token = await _loginBusiness.ValidateFacebookUserAsync(tokenVo.AccessToken);
+                if (token == null) return Unauthorized();
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
+
+        [HttpPost]
         [Route("refresh")]
         [ProducesResponseType((200), Type = typeof(TokenVO))]
         [ProducesResponseType(401)]

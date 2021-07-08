@@ -21,12 +21,12 @@ namespace Database.Repository
         public Task<User> ValidateCredentialsAsync(string email, string password)
         {
             var pass = ComputeHash(password, new SHA256CryptoServiceProvider());
-            return _context.Users.FirstOrDefaultAsync(u => (u.Email == email) && (u.Password == pass));
+            return _context.Users.Include(nameof(User.ProfilePicture)).FirstOrDefaultAsync(u => (u.Email == email) && (u.Password == pass));
         }
 
         public Task<User> FindByEmailAsync(string email)
         {
-            return _context.Users.SingleOrDefaultAsync(u => (u.Email == email));
+            return _context.Users.Include(nameof(User.ProfilePicture)).SingleOrDefaultAsync(u => (u.Email == email));
         }
 
         public Task<User> FindByIdAsync(int id)

@@ -189,7 +189,7 @@ namespace API
             });
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.TryAddSingleton(x =>
+            services.AddScoped(x =>
             {
                 var context = x.GetService<IHttpContextAccessor>();
                 var url = context.HttpContext.Request.IsHttps ? "https://" : "http://";
