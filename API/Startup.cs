@@ -207,6 +207,7 @@ namespace API
             services.AddScoped<IServiceBusiness, ServiceBusinessImplementation>();
             services.AddScoped<IAppointmentBusiness, AppointmentBusinessImplementation>();
             services.AddScoped<IRatingBusiness, RatingBusinessImplementation>();
+            services.AddScoped<IPublicBusiness, PublicBusinessImplementation>();
 
             services.AddTransient<ITokenService, TokenService>();
 

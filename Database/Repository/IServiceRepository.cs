@@ -18,5 +18,13 @@ namespace Database.Repository
             int page,
             CancellationToken cancellationToken,
             params string[] includes);
+
+        Task<PagedSearch<Service>> FindByServiceOrConsultantNameAsync(
+            string serviceOrConsultantName,
+            string sortDirection,
+            int pageSize,
+            int page,
+            CancellationToken cancellationToken,
+            params string[] includes);
     }
 }

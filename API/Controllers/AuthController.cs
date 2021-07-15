@@ -2,6 +2,7 @@
 using API.Data.VO;
 using API.Data.VO.Token;
 using API.Extension;
+using Database.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,10 +16,12 @@ namespace API.Controllers
     public class AuthController : ControllerBase
     {
         private ILoginBusiness _loginBusiness;
+        private readonly User _requester;
 
-        public AuthController(ILoginBusiness loginBusiness)
+        public AuthController(ILoginBusiness loginBusiness, User requester)
         {
             _loginBusiness = loginBusiness;
+            _requester = requester;
         }
 
         [HttpPost]
@@ -165,8 +168,8 @@ namespace API.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> RevokeAsync()
         {
-            var username = User.Identity.Name;
-            var result = await _loginBusiness.RevokeTokenAsync(username);
+            var email = _requester.Email;
+            var result = await _loginBusiness.RevokeTokenAsync(email);
 
             if (!result) return BadRequest("Ivalid client request");
             return NoContent();

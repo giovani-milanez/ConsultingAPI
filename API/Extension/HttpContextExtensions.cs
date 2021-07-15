@@ -17,7 +17,7 @@ namespace API.Extension
 
                 if (String.IsNullOrWhiteSpace(authToken))
                 {
-                    return null;
+                    return new User();
                 }
 
                 // basic auth shouldnt continue

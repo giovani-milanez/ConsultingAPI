@@ -79,5 +79,23 @@ namespace Database.Repository
             var item = await query.PaginateAsync(page, pageSize, cancellationToken);
             return item;            
         }
+
+        public async Task<PagedSearch<Service>> FindByServiceOrConsultantNameAsync(string serviceOrConsultantName, string sortDirection, int pageSize, int page, CancellationToken cancellationToken, params string[] includes)
+        {
+            var query = this._context.Services
+                .AsNoTracking()
+                .IncludeMultiple(includes);
+
+            if (!String.IsNullOrWhiteSpace(serviceOrConsultantName))
+            {
+                var nameLower = serviceOrConsultantName.ToLower();
+                query = query.Where(x => x.Title.ToLower().Contains(nameLower) || x.User.Name.ToLower().Contains(nameLower));
+            }
+
+            query = query.OrderByDescending(x => x.UserId);
+
+            var item = await query.PaginateAsync(page, pageSize, cancellationToken);
+            return item;
+        }
     }
 }
