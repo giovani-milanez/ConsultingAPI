@@ -41,7 +41,27 @@ namespace API.Controllers
             {
                 return this.ApiResulFromException(ex);
             }
-        }       
+        }
+
+        [HttpPost("servicePic/{serviceId}")]
+        //[RequestFormLimits(MultipartBodyLengthLimit = 16777215)]
+        [Authorize("Bearer")]
+        [ProducesResponseType((200), Type = typeof(FileDetailVO))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [Produces("application/json")]
+        public async Task<IActionResult> UploadServicePic([FromForm] IFormFile file, long serviceId)
+        {
+            try
+            {
+                FileDetailVO detail = await _fileBusiness.SaveServicePicAsync(file, serviceId);
+                return new OkObjectResult(detail);
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
 
         [HttpPost("appointment/{appointmentId}/step/{stepId}/document")]
         [Authorize("Bearer")]

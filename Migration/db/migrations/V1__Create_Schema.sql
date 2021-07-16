@@ -1,10 +1,13 @@
 CREATE TABLE `users` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `type` ENUM ('client', 'consultant', 'admin') NOT NULL,
-  `name` varchar(255),
+  `name` varchar(255) NOT NULL,
+  `public_name` varchar(255),
   `email` varchar(255) NOT NULL,
   `password` varchar(255),
   `cpf_cnpj` varchar(255),
+  `gender` varchar(255),
+  `phone_number` varchar(255),
   `short_description` varchar(255),
   `long_description` varchar(255),
   `profile_picture_id` bigint,
@@ -34,6 +37,7 @@ CREATE TABLE `services` (
   `user_id` bigint NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
+  `picture_id` bigint,
   `is_global` boolean NOT NULL,
   `is_deleted` boolean NOT NULL
 );
@@ -98,6 +102,8 @@ CREATE TABLE `appointment_step_files` (
 ALTER TABLE `users` ADD CONSTRAINT `user_profile_picture` FOREIGN KEY (`profile_picture_id`) REFERENCES `file_details` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 ALTER TABLE `steps` ADD CONSTRAINT `steps_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE `services` ADD CONSTRAINT `service_picture` FOREIGN KEY (`picture_id`) REFERENCES `file_details` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 ALTER TABLE `services` ADD CONSTRAINT `user_service` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION;
 

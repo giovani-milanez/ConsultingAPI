@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Model
 {
     [Table("services")]
+    [Index(nameof(PictureId), Name = "service_picture")]
     [Index(nameof(UserId), Name = "user_service")]
     public partial class Service : BaseEntity
     {
@@ -29,11 +30,16 @@ namespace Database.Model
         [Column("description")]
         [StringLength(255)]
         public string Description { get; set; }
+        [Column("picture_id")]
+        public long? PictureId { get; set; }
         [Column("is_global")]
         public bool IsGlobal { get; set; }
         [Column("is_deleted")]
         public bool IsDeleted { get; set; }
 
+        [ForeignKey(nameof(PictureId))]
+        [InverseProperty(nameof(FileDetail.Services))]
+        public virtual FileDetail Picture { get; set; }
         [ForeignKey(nameof(UserId))]
         [InverseProperty("Services")]
         public virtual User User { get; set; }

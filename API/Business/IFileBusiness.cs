@@ -11,6 +11,7 @@ namespace API.Business
     {
         Task<FileDetail> GetFileContentByGuidAsync(Guid fileGuid);
         Task<FileDetailVO> SaveProfilePicAsync(IFormFile file);
+        Task<FileDetailVO> SaveServicePicAsync(IFormFile file, long serviceId);
         Task<List<FileDetailVO>> SaveStepFilesAsync(IList<IFormFile> files, long appointmentId, long stepId);
         Task<FileDetailVO> SaveStepFileAsync(IFormFile file, long appointmentId, long stepId);
         Task DeleteFileAsync(Guid fileGuid);

@@ -24,9 +24,13 @@ namespace Database.Model
         [Required]
         [Column("type", TypeName = "enum('client','consultant','admin')")]
         public string Type { get; set; }
+        [Required]
         [Column("name")]
         [StringLength(255)]
         public string Name { get; set; }
+        [Column("public_name")]
+        [StringLength(255)]
+        public string PublicName { get; set; }
         [Required]
         [Column("email")]
         [StringLength(255)]
@@ -37,6 +41,12 @@ namespace Database.Model
         [Column("cpf_cnpj")]
         [StringLength(255)]
         public string CpfCnpj { get; set; }
+        [Column("gender")]
+        [StringLength(255)]
+        public string Gender { get; set; }
+        [Column("phone_number")]
+        [StringLength(255)]
+        public string PhoneNumber { get; set; }
         [Column("short_description")]
         [StringLength(255)]
         public string ShortDescription { get; set; }
@@ -57,11 +67,12 @@ namespace Database.Model
         [Column("rate_count")]
         public long RateCount { get; set; }
         [Column("refresh_token")]
+        [StringLength(500)]
         public string RefreshToken { get; set; }
-
         [Column("refresh_token_expiry_time", TypeName = "datetime")]
         public DateTime? RefreshTokenExpiryTime { get; set; }
         [Column("login_provider")]
+        [StringLength(255)]
         public string LoginProvider { get; set; }
 
         [ForeignKey(nameof(ProfilePictureId))]

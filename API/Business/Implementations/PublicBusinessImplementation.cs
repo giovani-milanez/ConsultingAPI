@@ -29,6 +29,7 @@ namespace API.Business.Implementations
                     pageSize, 
                     page, 
                     cancellationToken,
+                    nameof(Service.Picture),
                     $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}");
 
             return new PagedSearchVO<ServiceVO>

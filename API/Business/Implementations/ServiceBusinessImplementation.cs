@@ -154,6 +154,7 @@ namespace API.Business.Implementations
             }
 
             var entity = await _repository.FindByIdAsync(id, false,
+                    nameof(Service.Picture),
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}"
@@ -181,6 +182,7 @@ namespace API.Business.Implementations
         public async Task<List<ServiceVO>> FindAllAsync()
         {
             var all = await _repository.FindAllAsync(_requester,
+                    nameof(Service.Picture),
                     nameof(Service.ServicesSteps),
                     $"{nameof(Service.ServicesSteps)}.{nameof(ServicesStep.Step)}",
                     $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}"

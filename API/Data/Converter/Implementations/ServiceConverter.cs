@@ -10,9 +10,11 @@ namespace API.Data.Converter.Implementations
     {
         private readonly ServicesStepConverter ServicesStepConverter;
         private readonly UserConverter UserConverter;
+        private readonly FileConverter FileConverter;
 
         public ServiceConverter(FileConverter fileConverter)
         {
+            FileConverter = fileConverter;
             ServicesStepConverter = new ServicesStepConverter();
             UserConverter = new UserConverter(fileConverter);
         }
@@ -53,6 +55,7 @@ namespace API.Data.Converter.Implementations
                 Description = origin.Description,
                 IsDeleted = origin.IsDeleted,
                 IsGlobal = origin.IsGlobal,
+                PictureUrl = origin.Picture != null ? FileConverter.Parse(origin.Picture).Url : "",
                 Steps = ServicesStepConverter.Parse(origin.ServicesSteps.ToList())
             };
         }

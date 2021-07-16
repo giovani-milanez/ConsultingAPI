@@ -1,6 +1,7 @@
 ﻿using API.Data.Converter.Implementations;
 using API.Data.VO;
 using API.Exceptions;
+using Database.Extension;
 using Database.Model;
 using Database.Repository;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +21,7 @@ namespace API.Business.Implementations
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<AppointmentStepFile> _appointmentFileRepository;
         private readonly IRepository<Appointment> _appointmentRepository;
+        private readonly IRepository<Service> _serviceRepository;
         private readonly FileConverter _converter;
 
         public FileBusinessImplementation(
@@ -28,7 +30,9 @@ namespace API.Business.Implementations
             IFileRepository fileRepository,
             IRepository<User> userRepository,
             IRepository<AppointmentStepFile> appointmentFileRepository,
-            IRepository<Appointment> appointmentRepository)
+            IRepository<Appointment> appointmentRepository,
+            IRepository<Service> serviceRepository,
+            FileConverter fileConverter)
         {
             _requester = requester;
             _context = context;
@@ -36,10 +40,8 @@ namespace API.Business.Implementations
             _userRepository = userRepository;
             _appointmentFileRepository = appointmentFileRepository;
             _appointmentRepository = appointmentRepository;
-            var url = _context.HttpContext.Request.IsHttps ? "https://" : "http://";
-            url += _context.HttpContext.Request.Host;
-            url += "/api/v1.0/file";
-            _converter = new FileConverter(url);
+            _serviceRepository = serviceRepository;
+            _converter = fileConverter;
         }
 
         public Task<FileDetail> GetFileContentByGuidAsync(Guid fileGuid)
@@ -83,7 +85,53 @@ namespace API.Business.Implementations
             }
 
             return _converter.Parse(file);
-        }           
+        }
+
+        public async Task<FileDetailVO> SaveServicePicAsync(IFormFile formFile, long serviceId)
+        {
+            if (formFile == null || formFile.Length <= 0)
+            {
+                throw new APIException("Empty file provided");
+            }
+
+            var file = GetFileFromForm(formFile);
+
+            if (file.Type.ToLower() != ".jpg" && file.Type.ToLower() != ".png" && file.Type.ToLower() != ".jpeg")
+            {
+                throw new APIException($"Unsupported picture file type {file.Type}");
+            }
+            var service = await _serviceRepository.FindByIdAsync(serviceId, false);
+            if (service == null)
+            {
+                throw new NotFoundException($"Can't find service of id {serviceId}");
+            }
+            else if (!_requester.IsAdmin() && service.UserId != _requester.Id)
+            {
+                throw new UnauthorizedException("no permissions");
+            }
+            using (var ms = new MemoryStream())
+            {
+                formFile.CopyTo(ms);
+                file.Content.Content = ms.ToArray();
+            }
+            file = await _fileRepository.CreateAsync(file);
+
+
+            // update service pic
+            var previousPic = service.PictureId;
+            service.PictureId = file.Id;
+            await _serviceRepository.UpdateAsync(service);
+
+            // remove old profile pic
+            if (previousPic.HasValue)
+            {
+                var fileDetail = await _fileRepository.FindByIdAsync(previousPic.Value, false);
+                if (fileDetail != null)
+                    await _fileRepository.DeleteFileByGuidAsync(new Guid(fileDetail.Guid));
+            }
+
+            return _converter.Parse(file);
+        }
 
         public async Task<FileDetailVO> SaveStepFileAsync(IFormFile formFile, long appointmentId, long stepId)
         {

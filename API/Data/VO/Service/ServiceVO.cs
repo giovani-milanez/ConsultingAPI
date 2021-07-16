@@ -11,6 +11,7 @@ namespace API.Data.VO
         public string Description { get; set; }
         public bool IsGlobal { get; set; }
         public bool IsDeleted { get; set; }
+        public string PictureUrl { get; set; }
 
         public virtual UserShortVO User { get; set; }
         public virtual ICollection<ServicesStepVO> Steps { get; set; }

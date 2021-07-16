@@ -18,6 +18,7 @@ namespace Database.Model
         public FileDetail()
         {
             AppointmentStepFiles = new HashSet<AppointmentStepFile>();
+            Services = new HashSet<Service>();
             Users = new HashSet<User>();
         }
 
@@ -48,6 +49,8 @@ namespace Database.Model
         public virtual User Uploader { get; set; }
         [InverseProperty(nameof(AppointmentStepFile.File))]
         public virtual ICollection<AppointmentStepFile> AppointmentStepFiles { get; set; }
+        [InverseProperty(nameof(Service.Picture))]
+        public virtual ICollection<Service> Services { get; set; }
         [InverseProperty(nameof(User.ProfilePicture))]
         public virtual ICollection<User> Users { get; set; }
     }

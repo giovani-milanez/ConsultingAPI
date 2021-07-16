@@ -116,6 +116,12 @@ namespace Database.Model.Context
 
             modelBuilder.Entity<Service>(entity =>
             {
+                entity.HasOne(d => d.Picture)
+                    .WithMany(p => p.Services)
+                    .HasForeignKey(d => d.PictureId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("service_picture");
+
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Services)
                     .HasForeignKey(d => d.UserId)
