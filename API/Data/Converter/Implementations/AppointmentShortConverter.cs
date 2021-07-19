@@ -13,7 +13,7 @@ namespace API.Data.Converter.Implementations
         private readonly UserConverter UserConverter;
         public AppointmentShortConverter(FileConverter fileConverter)
         {
-            ServiceConverter = new ServiceShortConverter();
+            ServiceConverter = new ServiceShortConverter(fileConverter);
             UserConverter = new UserConverter(fileConverter);
         }
        
