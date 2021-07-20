@@ -58,5 +58,17 @@ namespace API.Business.Implementations
 
             return _consultantConverter.Parse(user);
         }
+
+        public async Task<ServiceVO> GetServiceByIdAsync(int id)
+        {
+            var service = await _serviceRepository.FindByIdAsync(id, false,
+                nameof(Service.Picture),
+                $"{nameof(Service.User)}.{nameof(User.ProfilePicture)}");
+
+            if (service == null)
+                throw new NotFoundException($"Can't find service of id {id}");
+
+            return _converter.Parse(service);
+        }
     }
 }

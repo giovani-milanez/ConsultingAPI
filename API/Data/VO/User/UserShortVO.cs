@@ -9,5 +9,6 @@
         public float RateMeanStars { get; set; }
         public long RateCount { get; set; }
         public string ProfilePicUrl { get; set; }
+        public string ShortDescription { get; set; }
     }
 }

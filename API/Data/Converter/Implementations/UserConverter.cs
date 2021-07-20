@@ -31,6 +31,7 @@ namespace API.Data.Converter.Implementations
                 //IsEmailConfirmed = origin.IsEmailConfirmed,
                 RateMeanStars = origin.RateMeanStars,
                 RateCount = origin.RateCount,
+                ShortDescription = origin.ShortDescription,
                 ProfilePicUrl = origin.ProfilePicture != null ? FileConverter.Parse(origin.ProfilePicture).Url : ""
             };
         }

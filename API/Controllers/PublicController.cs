@@ -66,5 +66,23 @@ namespace API.Controllers
                 return this.ApiResulFromException(ex);
             }
         }
+
+        [HttpGet("service/{id}")]
+        [ProducesResponseType((200), Type = typeof(ServiceVO))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [TypeFilter(typeof(HyperMediaFilter))]
+        public async Task<IActionResult> GetService(int id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return Ok(await _business.GetServiceByIdAsync(id));
+            }
+            catch (Exception ex)
+            {
+                return this.ApiResulFromException(ex);
+            }
+        }
     }
 }

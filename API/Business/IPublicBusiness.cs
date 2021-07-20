@@ -11,5 +11,6 @@ namespace API.Business
         Task<PagedSearchVO<ServiceVO>> FindWithPagedSearchAsync(
             string name, string sortDirection, int pageSize, int page, CancellationToken cancellationToken);
         Task<ConsultantVO> GetConsultantByIdAsync(int id);
+        Task<ServiceVO> GetServiceByIdAsync(int id);
     }
 }
